@@ -50,7 +50,7 @@ const config={
 if(!firebase.apps.length)firebase.initializeApp(config);
 const auth=firebase.auth();
 const db=firebase.firestore();
-const STAFF=['Lingam','Evans','Latoya','Meda','Abby'];
+const STAFF=['Lingam','Evans','Meda','Abby','Manier'];
 const REQUIRED_COVERAGE=2;
 const $=id=>document.getElementById(id);
 const fmt=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});};
