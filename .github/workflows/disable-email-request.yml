@@ -1,0 +1,38 @@
+name: Disable email request flow
+
+on:
+  push:
+    paths:
+      - '.github/workflows/disable-email-request.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove email and copy request actions
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('<button class="btn" type="submit">Open request email</button>\n          <button class="btn ghost" type="button" id="reqCopy">Copy request</button>', '<button class="btn" type="submit" id="submitRequest" disabled>Submit request</button>')
+          s=s.replace('The request opens in Gmail addressed to the schedule manager. Review it, then press Send.', 'Central request storage is being connected. The submit button will enable once requests can be saved safely.')
+          s=s.replace('$("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); openRequestEmail(); });\n    $("reqCopy").addEventListener("click", copyRequest);', '$("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); toast("Central request storage is being connected."); });')
+          assert 'Open request email' not in s
+          assert 'Copy request' not in s
+          assert 'id="submitRequest" disabled' in s
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Disable email request flow pending central storage"
+          git push
