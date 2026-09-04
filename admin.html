@@ -16,6 +16,22 @@
     <p id="who" class="muted">Not signed in.</p>
     <button id="signIn">Sign in with Google</button>
     <button id="refresh" class="ghost" hidden>Refresh requests</button>
+    <button id="signOut" class="ghost" hidden>Sign out</button>
+    <a href="index.html" style="margin-left:8px">Back to request page</a>
+  </section>
+
+  <section class="card" id="editCard" hidden>
+    <h2>Add or edit a day-off request</h2>
+    <p class="muted">Use this when you need to correct a staff member or date manually.</p>
+    <div class="summary" style="margin-top:12px">
+      <label>Staff<br><select id="editStaff"></select></label>
+      <label>Friday<br><input id="editDate" type="date"></label>
+    </div>
+    <div style="margin-top:12px">
+      <button id="saveEdit">Save request</button>
+      <button id="cancelEdit" class="ghost" hidden>Cancel edit</button>
+    </div>
+    <p id="editStatus" class="muted" style="margin-top:10px"></p>
   </section>
   <section class="card" id="summaryCard" hidden>
     <div class="summary">
@@ -29,7 +45,7 @@
     <h2>All requests</h2>
     <div style="overflow:auto">
       <table>
-        <thead><tr><th>Friday</th><th>Staff</th><th></th></tr></thead>
+        <thead><tr><th>Friday</th><th>Staff</th><th>Actions</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -65,6 +81,8 @@ async function load(){
     $('refresh').hidden=false;
     $('summaryCard').hidden=false;
     $('tableCard').hidden=false;
+    $('editCard').hidden=false;
+    $('signOut').hidden=false;
     $('total').textContent=requests.length;
     const grouped={};
     requests.forEach(r=>(grouped[r.fridayDate]??=[]).push(r));
@@ -78,7 +96,7 @@ async function load(){
       return `<div class="card ${bad?'conflict':off.length>=2?'warn':''}"><b>${esc(fmt(date))}</b> · ${off.length} off · ${available} available${bad?' · COVERAGE CONFLICT':''}<br><span class="muted">${off.map(x=>esc(x.staffName)).join(', ')}</span></div>`;
     }).join('');
     $('conflicts').textContent=conflicts;
-    $('rows').innerHTML=requests.map(r=>`<tr><td>${esc(fmt(r.fridayDate))}</td><td><b>${esc(r.staffName)}</b></td><td><button class="ghost" data-delete="${esc(r.id)}">Remove</button></td></tr>`).join('');
+    $('rows').innerHTML=requests.map(r=>`<tr><td>${esc(fmt(r.fridayDate))}</td><td><b>${esc(r.staffName)}</b></td><td><button class="ghost" data-edit="${esc(r.id)}" data-staff="${esc(r.staffName)}" data-date="${esc(r.fridayDate)}">Edit</button> <button class="ghost" data-delete="${esc(r.id)}">Remove</button></td></tr>`).join('');
   }catch(e){
     $('who').textContent=e.message||'Could not load requests.';
     $('who').className='bad';
@@ -86,8 +104,24 @@ async function load(){
 }
 $('signIn').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{$('who').textContent=e.message;$('who').className='bad';});
 $('refresh').onclick=load;
-$('rows').onclick=async e=>{const b=e.target.closest('[data-delete]');if(!b)return;if(!confirm('Remove this day-off request?'))return;b.disabled=true;try{await db.collection('fridayOffRequests').doc(b.dataset.delete).delete();await load();}catch(err){alert(err.message);b.disabled=false;}};
-auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='Not signed in.';$('who').className='muted';return;}$('signIn').hidden=true;load();});
+$('rows').onclick=async e=>{
+  const edit=e.target.closest('[data-edit]');
+  if(edit){editingId=edit.dataset.edit;$('editStaff').value=edit.dataset.staff;$('editDate').value=edit.dataset.date;$('cancelEdit').hidden=false;$('editStatus').textContent='Editing existing request.';$('editCard').scrollIntoView({behavior:'smooth'});return;}
+  const b=e.target.closest('[data-delete]');if(!b)return;if(!confirm('Remove this day-off request?'))return;b.disabled=true;try{await db.collection('fridayOffRequests').doc(b.dataset.delete).delete();await load();}catch(err){alert(err.message);b.disabled=false;}
+};
+$('saveEdit').onclick=async()=>{
+  const staff=$('editStaff').value,date=$('editDate').value;if(!staff||!date)return;
+  const key=staffKey(staff),newId=key+'__'+date;
+  $('saveEdit').disabled=true;$('editStatus').textContent='Saving…';
+  try{
+    await db.collection('fridayOffRequests').doc(newId).set({staffName:staff,staffKey:key,fridayDate:date,canSwap:true,submittedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if(editingId&&editingId!==newId)await db.collection('fridayOffRequests').doc(editingId).delete();
+    editingId=null;$('cancelEdit').hidden=true;$('editStatus').textContent='Saved ✓';await load();
+  }catch(err){$('editStatus').textContent=err.message||'Could not save.';}finally{$('saveEdit').disabled=false;}
+};
+$('cancelEdit').onclick=()=>{editingId=null;$('cancelEdit').hidden=true;$('editStatus').textContent='';};
+$('signOut').onclick=()=>auth.signOut();
+auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='Not signed in.';$('who').className='muted';$('signIn').hidden=false;$('signOut').hidden=true;$('editCard').hidden=true;$('summaryCard').hidden=true;$('tableCard').hidden=true;return;}$('signIn').hidden=true;load();});
 </script>
 </body>
 </html>
