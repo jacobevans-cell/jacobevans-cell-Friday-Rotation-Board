@@ -14,9 +14,11 @@ Active Friday pool:
 - Abby
 - Manier
 
+`Manier` is the display name used for Latoya Manier in the Friday system. This is a naming change, not a removal of that teacher from the rotation.
+
 Meda is treated as a standing Friday presence / campus support person. Regular rotating coverage is built primarily around Abby, Manier, Evans, and Lingam, while still honoring any day-off request Meda submits.
 
-Latoya is no longer in the active future Friday rotation pool. Dorr and McKinley are also not assigned future Friday duty. Historical August records may remain in the hidden draft data.
+Dorr and McKinley are not assigned future Friday duty. Historical August records may remain in the hidden draft data.
 
 Fixed Teacher Clarity training Fridays from the September 4 staffing chat:
 
