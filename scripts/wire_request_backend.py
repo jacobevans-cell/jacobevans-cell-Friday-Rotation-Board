@@ -4,6 +4,12 @@ from pathlib import Path
 p=Path('index.html')
 s=p.read_text(encoding='utf-8')
 
+# Keep the copy aligned with the actual rule: submitted = approved/unavailable.
+s=s.replace('The final Friday schedule will be published after requests are reviewed.',
+            'Every submitted request is treated as an approved day off and will be used when the new rotation is generated.')
+s=s.replace('This is an availability request only. No Friday assignments are currently published.',
+            'Submitting this request means you will not be scheduled on that Friday.')
+
 # Add visible success/error/disabled states.
 css='''\n/* central request submission states */\n.req-status.req-ok{background:var(--s-work-bg);border-left-color:var(--s-work-fg);color:var(--s-work-fg)}\n.req-status.req-error{background:#FCE9E7;border-left-color:#A63D35;color:#7D2924}\n:root[data-theme="dark"] .req-status.req-error{background:#351B1A;color:#FFB7AF}\n.btn:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.25)}\n'''
 if 'central request submission states' not in s:
@@ -53,7 +59,7 @@ new_block=r'''  /* ---------- Friday-off requests ---------- */
     if (kind === "error") box.classList.add("req-error");
   };
   var updateRequestStatus = function () {
-    setRequestMessage("This is an availability request only. No Friday assignments are currently published.", "");
+    setRequestMessage("Submitting this request means you will not be scheduled on that Friday.", "");
   };
   var ensureRequestUser = async function () {
     var user = requestAuth.currentUser;
@@ -120,7 +126,8 @@ required=[
   'Request saved ✓',
   'id="submitRequest">Submit request</button>',
   'firebase-functions-compat.js',
-  'req-status.req-ok'
+  'req-status.req-ok',
+  'Every submitted request is treated as an approved day off'
 ]
 for item in required:
     if item not in s:
