@@ -1,0 +1,9 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "friday-scheduler",
+      "runtime": "nodejs22"
+    }
+  ]
+}
