@@ -449,10 +449,9 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
         </div>
         <p class="req-status" id="reqStatus">This is an availability request only. No Friday assignments are currently published.</p>
         <div class="req-actions">
-          <button class="btn" type="submit">Open request email</button>
-          <button class="btn ghost" type="button" id="reqCopy">Copy request</button>
+          <button class="btn" type="submit" id="submitRequest" disabled>Submit request</button>
         </div>
-        <p class="req-small">The request opens in Gmail addressed to the schedule manager. Review it, then press Send.</p>
+        <p class="req-small">Central request storage is being connected. The submit button will enable once requests can be saved safely.</p>
       </form>
     </div>
   </section>
@@ -852,8 +851,7 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
     if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;
     $("reqStaff").addEventListener("change", updateRequestStatus);
     $("reqFriday").addEventListener("change", updateRequestStatus);
-    $("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); openRequestEmail(); });
-    $("reqCopy").addEventListener("click", copyRequest);
+    $("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); toast("Central request storage is being connected."); });
     updateRequestStatus();
   };
   var syncRequestStaff = function () {
