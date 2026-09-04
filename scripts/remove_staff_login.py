@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Trigger after workflow exists.
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
 original = s
