@@ -1,0 +1,1250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Friday Rotation Board</title>
+<meta name="description" content="Interactive Friday campus and staff rotation schedule for the 2026-2027 school year.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* ============================ TOKENS ============================ */
+:root{
+  --paper:#EDEFF3; --paper-2:#E4E8EE;
+  --card:#FFFFFF; --card-2:#F5F7FA; --card-3:#EDF1F7;
+  --ink:#14213D; --ink-2:#47536B; --ink-3:#6E7A91;
+  --rule:#D5DBE5; --rule-2:#E6EAF1;
+  --brand:#1B3A6B; --brand-2:#2C5A96; --brand-ink:#FFFFFF;
+  --brass:#B07A12; --brass-2:#8A5F0C; --brass-soft:#F6ECD6;
+  --shadow:0 1px 2px rgba(20,33,61,.06), 0 8px 24px -12px rgba(20,33,61,.18);
+  --shadow-lg:0 2px 4px rgba(20,33,61,.08), 0 24px 48px -20px rgba(20,33,61,.30);
+  --focus:#2C5A96;
+
+  --s-work-fg:#125A3B;   --s-work-bg:#DDF0E6;   --s-work-bd:#A5D6BD;
+  --s-morn-fg:#0B5A66;   --s-morn-bg:#D6EDF1;   --s-morn-bd:#9BCFD9;
+  --s-train-fg:#413CA0;  --s-train-bg:#E5E3F7;  --s-train-bd:#BDB8EC;
+  --s-stays-fg:#875707;  --s-stays-bg:#F8E9C9;  --s-stays-bd:#E3C388;
+  --s-done-fg:#3D5646;   --s-done-bg:#E5EDE7;   --s-done-bd:#C2D2C6;
+  --s-off-fg:#5B6880;    --s-off-bg:#E9ECF1;    --s-off-bd:#D2D8E3;
+  --s-closed-fg:#78829A; --s-closed-bg:#E6E8ED; --s-closed-bd:#D2D8E3;
+  --hatch:rgba(20,33,61,.07);
+
+  --h0:#EDF1F7; --h1:#C8D9EE; --h2:#84A9D5; --h3:#2C5A96;
+  --h0-ink:#8C97AC; --h1-ink:#14213D; --h2-ink:#0D1E36; --h3-ink:#FFFFFF;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E141F; --paper-2:#0A0F18;
+    --card:#161E2C; --card-2:#1C2637; --card-3:#212D41;
+    --ink:#E9EEF7; --ink-2:#A8B5CA; --ink-3:#7C8AA3;
+    --rule:#2A3446; --rule-2:#212B3B;
+    --brand:#83ACE7; --brand-2:#9CC0F2; --brand-ink:#0B1220;
+    --brass:#E5B45F; --brass-2:#F0C77F; --brass-soft:#2A2113;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -12px rgba(0,0,0,.7);
+    --shadow-lg:0 2px 6px rgba(0,0,0,.55), 0 28px 56px -22px rgba(0,0,0,.85);
+    --focus:#9CC0F2;
+
+    --s-work-fg:#7FDCAF;   --s-work-bg:#0F2A21;   --s-work-bd:#1F5B42;
+    --s-morn-fg:#7AD5E2;   --s-morn-bg:#0C272C;   --s-morn-bd:#1B5561;
+    --s-train-fg:#B5B0F6;  --s-train-bg:#1C1A38;  --s-train-bd:#3E3982;
+    --s-stays-fg:#F0C176;  --s-stays-bg:#2C2110;  --s-stays-bd:#6B4F18;
+    --s-done-fg:#A8C4B2;   --s-done-bg:#18231C;   --s-done-bd:#324639;
+    --s-off-fg:#8B99AE;    --s-off-bg:#19212F;    --s-off-bd:#2A3446;
+    --s-closed-fg:#727E93; --s-closed-bg:#141B26; --s-closed-bd:#242E3E;
+    --hatch:rgba(233,238,247,.07);
+
+    --h0:#182131; --h1:#22405F; --h2:#356690; --h3:#74A8DE;
+    --h0-ink:#6B7891; --h1-ink:#CFE0F4; --h2-ink:#EAF2FC; --h3-ink:#0B1220;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E141F; --paper-2:#0A0F18;
+  --card:#161E2C; --card-2:#1C2637; --card-3:#212D41;
+  --ink:#E9EEF7; --ink-2:#A8B5CA; --ink-3:#7C8AA3;
+  --rule:#2A3446; --rule-2:#212B3B;
+  --brand:#83ACE7; --brand-2:#9CC0F2; --brand-ink:#0B1220;
+  --brass:#E5B45F; --brass-2:#F0C77F; --brass-soft:#2A2113;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -12px rgba(0,0,0,.7);
+  --shadow-lg:0 2px 6px rgba(0,0,0,.55), 0 28px 56px -22px rgba(0,0,0,.85);
+  --focus:#9CC0F2;
+
+  --s-work-fg:#7FDCAF;   --s-work-bg:#0F2A21;   --s-work-bd:#1F5B42;
+  --s-morn-fg:#7AD5E2;   --s-morn-bg:#0C272C;   --s-morn-bd:#1B5561;
+  --s-train-fg:#B5B0F6;  --s-train-bg:#1C1A38;  --s-train-bd:#3E3982;
+  --s-stays-fg:#F0C176;  --s-stays-bg:#2C2110;  --s-stays-bd:#6B4F18;
+  --s-done-fg:#A8C4B2;   --s-done-bg:#18231C;   --s-done-bd:#324639;
+  --s-off-fg:#8B99AE;    --s-off-bg:#19212F;    --s-off-bd:#2A3446;
+  --s-closed-fg:#727E93; --s-closed-bg:#141B26; --s-closed-bd:#242E3E;
+  --hatch:rgba(233,238,247,.07);
+
+  --h0:#182131; --h1:#22405F; --h2:#356690; --h3:#74A8DE;
+  --h0-ink:#6B7891; --h1-ink:#CFE0F4; --h2-ink:#EAF2FC; --h3-ink:#0B1220;
+}
+
+/* ============================ BASE ============================ */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'Source Sans 3',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:16px; line-height:1.55; letter-spacing:.005em;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Archivo','Helvetica Neue',Arial,sans-serif;margin:0;text-wrap:balance;line-height:1.15}
+p{margin:0}
+button{font:inherit;color:inherit}
+:where(a){color:var(--brand-2)}
+.wrap{width:min(1200px,100% - 2.5rem);margin-inline:auto}
+.mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+.eyebrow{font-family:'Archivo',sans-serif;font-size:.688rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2.5px solid var(--focus);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+
+/* ============================ MASTHEAD ============================ */
+.masthead{background:var(--brand);color:#fff;border-bottom:3px solid var(--brass);position:relative;overflow:hidden}
+:root[data-theme="dark"] .masthead,
+:root:not([data-theme="light"]) .masthead{background:var(--card-3)}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .masthead{background:#1B3A6B}}
+:root[data-theme="light"] .masthead{background:#1B3A6B}
+.masthead::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 96px)}
+.mast{display:flex;flex-wrap:wrap;gap:1.25rem;align-items:flex-end;justify-content:space-between;padding:1.75rem 0 1.5rem;position:relative;z-index:1}
+.mast-id{display:flex;gap:1rem;align-items:center;min-width:0}
+.monogram{flex:none;width:56px;height:56px;display:grid;place-items:center;background:var(--brass);color:#20160A;
+  font-family:'Archivo',sans-serif;font-weight:800;font-size:.938rem;letter-spacing:.06em;border-radius:3px}
+.masthead h1{font-size:clamp(1.5rem,1.1rem + 1.7vw,2.25rem);font-weight:800;letter-spacing:-.015em;text-transform:uppercase;color:#fff}
+.mast-eyebrow{font-family:'Archivo',sans-serif;font-size:.688rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin-bottom:.35rem}
+.mast-sub{color:rgba(255,255,255,.78);font-size:.875rem;margin-top:.4rem;max-width:62ch}
+.mast-tools{display:flex;gap:.5rem;align-items:center}
+.tool{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:5px;
+  padding:.45rem .75rem;font-size:.813rem;font-weight:600;cursor:pointer;display:inline-flex;gap:.4rem;align-items:center;transition:background .15s}
+.tool:hover{background:rgba(255,255,255,.18)}
+
+/* ============================ IDENTITY BAR ============================ */
+.idbar{position:sticky;top:0;z-index:40;background:var(--card);border-bottom:1px solid var(--rule);box-shadow:var(--shadow)}
+.idbar-in{display:flex;gap:.75rem;align-items:center;padding:.625rem 0;flex-wrap:wrap}
+.idbar-label{font-family:'Archivo',sans-serif;font-size:.688rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);flex:none}
+.who{display:flex;gap:.375rem;flex-wrap:wrap;min-width:0}
+.who button{background:var(--card-2);border:1px solid var(--rule);border-radius:99px;padding:.3rem .8rem;
+  font-size:.875rem;font-weight:600;color:var(--ink-2);cursor:pointer;transition:.15s;white-space:nowrap}
+.who button:hover{border-color:var(--brand);color:var(--ink)}
+.who button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.who button.all[aria-pressed="true"]{background:var(--ink-2);border-color:var(--ink-2);color:var(--card)}
+
+/* ============================ SPOTLIGHT ============================ */
+main{padding-block:1.75rem 4rem;display:flex;flex-direction:column;gap:2.25rem}
+.spot{background:var(--card);border:1px solid var(--rule);border-left:5px solid var(--brass);border-radius:8px;
+  box-shadow:var(--shadow);padding:1.25rem 1.5rem;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1.25rem;align-items:center}
+.spot-when{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap}
+.spot-tag{font-family:'Archivo',sans-serif;font-size:.688rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--brass-2);background:var(--brass-soft);padding:.2rem .55rem;border-radius:3px}
+.spot-date{font-family:'Archivo',sans-serif;font-size:1.375rem;font-weight:700;letter-spacing:-.01em}
+.spot-line{color:var(--ink-2);font-size:.938rem;margin-top:.5rem}
+.spot-line strong{color:var(--ink);font-weight:600}
+.spot-cta{display:flex;gap:.5rem;flex-wrap:wrap}
+@media (max-width:720px){.spot{grid-template-columns:1fr}}
+
+/* ============================ TILES ============================ */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:.75rem}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:.9rem 1rem;box-shadow:var(--shadow)}
+.tile-k{font-family:'Archivo',sans-serif;font-size:.625rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.tile-v{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:1.75rem;font-weight:600;line-height:1.1;margin-top:.35rem;letter-spacing:-.02em}
+.tile-n{font-size:.813rem;color:var(--ink-3);margin-top:.15rem}
+.tile.hot .tile-v{color:var(--brass-2)}
+.tile-v.text{font-family:'Archivo',sans-serif;font-size:1.5rem;letter-spacing:-.01em}
+
+/* ============================ SECTIONS ============================ */
+section > header{display:flex;gap:1rem;align-items:baseline;justify-content:space-between;flex-wrap:wrap;margin-bottom:1rem;
+  padding-bottom:.6rem;border-bottom:2px solid var(--ink)}
+section > header h2{font-size:1.125rem;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+section > header .hint{font-size:.813rem;color:var(--ink-3)}
+
+/* ============================ CONTROLS ============================ */
+.controls{display:flex;gap:.625rem;flex-wrap:wrap;align-items:center;margin-bottom:1.125rem}
+.ctl{display:flex;align-items:center;gap:.4rem;background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:.35rem .6rem}
+.ctl label{font-family:'Archivo',sans-serif;font-size:.625rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.ctl select,.ctl input{border:0;background:transparent;color:var(--ink);font:inherit;font-size:.875rem;padding:.1rem;min-width:0}
+.ctl select:focus,.ctl input:focus{outline:none}
+.ctl:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px rgba(44,90,150,.16)}
+.ctl input{width:12rem}
+.segs{display:inline-flex;background:var(--card-2);border:1px solid var(--rule);border-radius:6px;padding:2px;gap:2px}
+.segs button{background:transparent;border:0;border-radius:4px;padding:.32rem .7rem;font-size:.813rem;font-weight:600;color:var(--ink-2);cursor:pointer}
+.segs button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.switch{display:inline-flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:.4rem .7rem;cursor:pointer;font-size:.875rem;font-weight:600;color:var(--ink-2)}
+.switch input{accent-color:var(--brand-2);width:1rem;height:1rem;margin:0}
+.count{font-size:.813rem;color:var(--ink-3);margin-left:auto}
+
+/* ============================ ROSTER CARDS ============================ */
+.monthgrp{margin-bottom:1.75rem}
+.monthgrp h3{font-family:'Archivo',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;align-items:center;gap:.75rem;margin-bottom:.7rem}
+.monthgrp h3::after{content:"";flex:1;height:1px;background:var(--rule)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:.75rem}
+.card{position:relative;text-align:left;width:100%;background:var(--card);border:1px solid var(--rule);border-radius:8px;
+  padding:.9rem 1rem 1rem;box-shadow:var(--shadow);cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;
+  display:flex;flex-direction:column;gap:.55rem}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--brand)}
+.card.is-closed{background:var(--card-2);
+  background-image:repeating-linear-gradient(135deg,var(--hatch) 0 1px,transparent 1px 9px);cursor:pointer}
+.card.is-today{border-color:var(--brass);border-width:2px;padding:calc(.9rem - 1px) calc(1rem - 1px) calc(1rem - 1px)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem}
+.card-date{font-family:'Archivo',sans-serif;font-weight:700;font-size:1.063rem;letter-spacing:-.01em;display:flex;align-items:baseline;gap:.4rem;
+  background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.card:hover .card-date,.card-date:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1.5px}
+.cellbtn{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.cellbtn:hover{text-decoration:underline;text-underline-offset:3px}
+.card-date .dow{color:var(--ink-3);font-weight:600;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase}
+.badge{flex:none;font-family:'Archivo',sans-serif;font-size:.594rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:.22rem .5rem;border-radius:3px;border:1px solid;white-space:nowrap}
+.b-regular{color:var(--ink-2);background:var(--card-2);border-color:var(--rule)}
+.b-training{color:var(--s-train-fg);background:var(--s-train-bg);border-color:var(--s-train-bd)}
+.b-completed{color:var(--s-done-fg);background:var(--s-done-bg);border-color:var(--s-done-bd)}
+.b-noschool{color:var(--s-closed-fg);background:var(--s-closed-bg);border-color:var(--s-closed-bd)}
+.today-flag{font-family:'Archivo',sans-serif;font-size:.594rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#20160A;background:var(--brass);padding:.22rem .5rem;border-radius:3px}
+.mine{display:flex;align-items:center;gap:.5rem;padding:.5rem .65rem;border-radius:6px;border:1px solid;font-size:.875rem;font-weight:600}
+.mine .mine-k{font-family:'Archivo',sans-serif;font-size:.594rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.rows{display:flex;flex-direction:column;gap:.3rem;font-size:.875rem}
+.row{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:.6rem;align-items:baseline}
+.row dt{font-family:'Archivo',sans-serif;font-size:.625rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.row dd{margin:0;color:var(--ink-2)}
+.row dd b{color:var(--ink);font-weight:600}
+.people{display:flex;gap:.3rem;flex-wrap:wrap}
+.pchip{font-size:.813rem;font-weight:600;background:var(--card-3);border:1px solid var(--rule);color:var(--ink);border-radius:99px;padding:.05rem .5rem}
+.pchip.is-me{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.openflag{display:inline-flex;align-items:center;gap:.35rem;font-size:.75rem;font-weight:700;color:var(--s-stays-fg);
+  background:var(--s-stays-bg);border:1px solid var(--s-stays-bd);border-radius:99px;padding:.1rem .55rem}
+.strip{display:flex;gap:3px;margin-top:auto;padding-top:.2rem}
+.strip span{flex:1;height:6px;border-radius:2px;background:currentColor}
+.strip span.st-off,.strip span.st-closed{opacity:.28}
+.card-foot{display:flex;justify-content:space-between;align-items:center;gap:.5rem;color:var(--ink-3);font-size:.75rem;margin-top:.1rem}
+
+/* status colour classes shared by chips, bands, grid cells */
+.st-work{color:var(--s-work-fg);background:var(--s-work-bg);border-color:var(--s-work-bd)}
+.st-morn{color:var(--s-morn-fg);background:var(--s-morn-bg);border-color:var(--s-morn-bd)}
+.st-train{color:var(--s-train-fg);background:var(--s-train-bg);border-color:var(--s-train-bd)}
+.st-stays{color:var(--s-stays-fg);background:var(--s-stays-bg);border-color:var(--s-stays-bd)}
+.st-done{color:var(--s-done-fg);background:var(--s-done-bg);border-color:var(--s-done-bd)}
+.st-off{color:var(--s-off-fg);background:var(--s-off-bg);border-color:var(--s-off-bd)}
+.st-closed{color:var(--s-closed-fg);background:var(--s-closed-bg);border-color:var(--s-closed-bd)}
+
+.statkey{display:flex;gap:.9rem;flex-wrap:wrap;align-items:center;margin:-.35rem 0 1.15rem;font-size:.75rem;color:var(--ink-3)}
+.statkey[hidden]{display:none}
+.statkey .k{display:inline-flex;align-items:center;gap:.35rem}
+.statkey .k i{width:16px;height:6px;border-radius:2px;display:inline-block;background:currentColor}
+.statkey .k.dim i{opacity:.28}
+.statkey .lead{font-family:'Archivo',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:.625rem;color:var(--ink-3)}
+.empty{text-align:center;padding:3rem 1rem;color:var(--ink-3);background:var(--card);border:1px dashed var(--rule);border-radius:8px}
+
+/* ============================ GRID VIEW ============================ */
+.tablewrap{overflow-x:auto;background:var(--card);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow)}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:.813rem}
+th,td{padding:.5rem .6rem;text-align:left;border-bottom:1px solid var(--rule-2);white-space:nowrap}
+thead th{position:sticky;top:0;z-index:2;background:var(--card-3);font-family:'Archivo',sans-serif;font-size:.625rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);border-bottom:2px solid var(--rule)}
+tbody tr:hover td{background:var(--card-2)}
+.gcell{font-size:.75rem;font-weight:600;border:1px solid;border-radius:4px;padding:.2rem .45rem;display:inline-block;min-width:5.5rem;text-align:center}
+th.me,td.me{background:rgba(44,90,150,.07)}
+:root[data-theme="dark"] th.me,:root[data-theme="dark"] td.me{background:rgba(156,192,242,.09)}
+tr.is-today td{background:var(--brass-soft) !important}
+.sticky-col{position:sticky;left:0;z-index:1;background:var(--card);border-right:1px solid var(--rule)}
+thead .sticky-col{z-index:3;background:var(--card-3)}
+tbody tr:hover .sticky-col{background:var(--card-2)}
+
+/* ============================ HEATMAP ============================ */
+.heat{overflow-x:auto;background:var(--card);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow)}
+.heat table{font-size:.813rem}
+.heat th,.heat td{padding:.4rem .45rem}
+.heat abbr{text-decoration:none}
+.heat td.h{text-align:center;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-weight:600;
+  padding:3px;border:0}
+.heat td.h span{display:block;padding:.35rem 0;border-radius:4px}
+.heat tr.me-row .sticky-col{color:var(--brand-2);font-weight:700}
+.heat .tot{font-family:'IBM Plex Mono',monospace;font-weight:600;text-align:center}
+.legend{display:flex;gap:1rem;flex-wrap:wrap;align-items:center;margin-top:.9rem;font-size:.75rem;color:var(--ink-3)}
+.legend .sw{display:inline-flex;align-items:center;gap:.35rem}
+.legend .sw i{width:14px;height:14px;border-radius:3px;display:inline-block;border:1px solid var(--rule)}
+.note{background:var(--card-2);border-left:3px solid var(--brass);padding:.75rem 1rem;border-radius:0 6px 6px 0;
+  font-size:.875rem;color:var(--ink-2);margin-top:1rem}
+
+/* ============================ DAY PLAN ============================ */
+.dayplan{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:1.5rem;align-items:start}
+@media (max-width:860px){.dayplan{grid-template-columns:1fr}}
+.timeline{position:relative;padding-left:1.25rem;border-left:2px solid var(--rule)}
+.tl{position:relative;padding:.5rem 0 .5rem .25rem;display:grid;grid-template-columns:6.5rem minmax(0,1fr);gap:.85rem;align-items:baseline}
+.tl::before{content:"";position:absolute;left:-1.6rem;top:1rem;width:9px;height:9px;border-radius:50%;background:var(--brand);border:2px solid var(--card)}
+.tl.sub{padding-top:0;color:var(--ink-3);font-size:.875rem}
+.tl.sub::before{display:none}
+.tl.sub .tl-a{color:var(--ink-3);font-style:italic}
+.tl-t{font-family:'IBM Plex Mono',monospace;font-size:.813rem;font-weight:600;color:var(--brand-2);font-variant-numeric:tabular-nums}
+.tl-a{font-size:.938rem}
+.tl.pin::before{background:var(--brass);width:11px;height:11px;left:-1.7rem}
+.tl.pin .tl-a{font-weight:700}
+.duty{background:var(--card);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow);padding:1rem 1.1rem;margin-bottom:1rem}
+.duty h4{font-family:'Archivo',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.7rem}
+.duty ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.4rem}
+.duty li{display:flex;justify-content:space-between;gap:.75rem;align-items:center;font-size:.875rem;
+  padding-bottom:.4rem;border-bottom:1px dashed var(--rule-2)}
+.duty li:last-child{border-bottom:0;padding-bottom:0}
+.duty li span:first-child{color:var(--ink-2)}
+.assigned{font-family:'IBM Plex Mono',monospace;font-size:.75rem;font-weight:600;padding:.1rem .5rem;border-radius:3px;border:1px solid;white-space:nowrap}
+.a-yes{color:var(--s-work-fg);background:var(--s-work-bg);border-color:var(--s-work-bd)}
+.a-no{color:var(--s-stays-fg);background:var(--s-stays-bg);border-color:var(--s-stays-bd)}
+
+/* ============================ REQUESTS ============================ */
+.request-panel{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:1rem;align-items:stretch}
+@media (max-width:820px){.request-panel{grid-template-columns:1fr}}
+.request-intro,.request-form{background:var(--card);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow);padding:1rem 1.1rem}
+.request-intro{border-left:5px solid var(--brand)}
+.request-intro h3{font-size:1.15rem;margin:.3rem 0 .45rem}
+.request-intro p{color:var(--ink-2);font-size:.9rem}
+.request-callout{margin-top:.85rem;padding:.7rem .8rem;background:var(--card-2);border:1px solid var(--rule);border-radius:6px;font-size:.83rem;color:var(--ink-2)}
+.req-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+@media (max-width:620px){.req-grid{grid-template-columns:1fr}}
+.req-field{display:flex;flex-direction:column;gap:.3rem}
+.req-field.full{grid-column:1/-1}
+.req-field label{font-family:'Archivo',sans-serif;font-size:.625rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3)}
+.req-field select,.req-field textarea{width:100%;border:1px solid var(--rule);background:var(--card-2);color:var(--ink);border-radius:6px;padding:.55rem .65rem;font:inherit;font-size:.9rem}
+.req-field textarea{min-height:5.4rem;resize:vertical}
+.req-field select:focus,.req-field textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(44,90,150,.16)}
+.req-check{display:flex;align-items:center;gap:.55rem;font-size:.875rem;color:var(--ink-2);margin-top:.05rem}
+.req-check input{accent-color:var(--brand-2);width:1rem;height:1rem}
+.req-status{margin:.8rem 0 0;padding:.65rem .75rem;border-left:3px solid var(--brass);background:var(--brass-soft);border-radius:0 5px 5px 0;font-size:.875rem;color:var(--ink-2)}
+.req-status strong{color:var(--ink)}
+.req-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.85rem}
+.req-small{font-size:.75rem;color:var(--ink-3);margin-top:.6rem}
+
+/* ============================ RULES ============================ */
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem}
+.rule{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:.9rem 1rem;box-shadow:var(--shadow)}
+.rule h4{font-family:'Archivo',sans-serif;font-size:.813rem;font-weight:700;margin-bottom:.35rem;color:var(--brand-2)}
+.rule p{font-size:.875rem;color:var(--ink-2)}
+
+/* ============================ DIALOG ============================ */
+dialog{border:0;padding:0;background:transparent;max-width:min(640px,calc(100vw - 2rem));width:100%}
+dialog::backdrop{background:rgba(10,15,24,.55);backdrop-filter:blur(3px)}
+.sheet{background:var(--card);border:1px solid var(--rule);border-radius:10px;box-shadow:var(--shadow-lg);overflow:hidden}
+.sheet-head{background:var(--brand);color:#fff;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+:root[data-theme="dark"] .sheet-head{background:var(--card-3);color:var(--ink)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sheet-head{background:var(--card-3);color:var(--ink)}}
+.sheet-head h3{font-size:1.25rem;font-weight:700}
+.sheet-head .sd{font-size:.813rem;opacity:.8;margin-top:.2rem}
+.x{background:rgba(255,255,255,.14);border:0;color:inherit;width:30px;height:30px;border-radius:5px;cursor:pointer;font-size:1.1rem;line-height:1;flex:none}
+:root[data-theme="dark"] .x{background:var(--card-2)}
+.sheet-body{padding:1.1rem 1.25rem 1.35rem;display:flex;flex-direction:column;gap:1rem;max-height:min(70vh,640px);overflow-y:auto}
+.stafflist{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.4rem}
+.sl{display:flex;justify-content:space-between;align-items:center;gap:.5rem;border:1px solid;border-radius:6px;padding:.4rem .6rem;font-size:.813rem}
+.sl b{font-weight:700}
+.sl .who-n{font-family:'Archivo',sans-serif}
+
+/* ============================ TOAST / FOOTER ============================ */
+.toast{position:fixed;left:50%;bottom:1.5rem;transform:translate(-50%,140%);background:var(--ink);color:var(--paper);
+  padding:.7rem 1.1rem;border-radius:7px;font-size:.875rem;box-shadow:var(--shadow-lg);z-index:90;transition:transform .28s cubic-bezier(.2,.8,.3,1);
+  max-width:min(520px,calc(100vw - 2rem));display:flex;gap:.75rem;align-items:center}
+.toast.on{transform:translate(-50%,0)}
+.toast button{background:transparent;border:1px solid currentColor;border-radius:5px;padding:.15rem .55rem;font-size:.75rem;font-weight:600;cursor:pointer;flex:none}
+footer{border-top:1px solid var(--rule);padding:1.5rem 0 2.5rem;color:var(--ink-3);font-size:.813rem}
+footer .wrap{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.btn{background:var(--brand);color:var(--brand-ink);border:1px solid var(--brand);border-radius:6px;padding:.45rem .9rem;
+  font-size:.813rem;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{background:var(--brand-2);border-color:var(--brand-2)}
+.btn.ghost{background:transparent;color:var(--brand-2);border-color:var(--rule)}
+.btn.ghost:hover{background:var(--card-2);border-color:var(--brand)}
+textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-size:.75rem;background:var(--card-2);
+  color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:.6rem}
+
+/* ============================ PRINT ============================ */
+@media print{
+  :root{--paper:#fff;--card:#fff;--card-2:#fff;--card-3:#f2f2f2;--ink:#000;--ink-2:#333;--ink-3:#555;--rule:#bbb;--rule-2:#ddd;--shadow:none;--shadow-lg:none}
+  body{background:#fff}
+  .idbar,.mast-tools,.controls,.spot-cta,.toast,.card-foot,footer{display:none !important}
+  .masthead{background:#fff !important;color:#000;border-bottom:2px solid #000}
+  .masthead h1{color:#000}.mast-sub{color:#333}.mast-eyebrow{color:#555}.monogram{background:#000;color:#fff}
+  .card{break-inside:avoid;box-shadow:none}
+  .cards{grid-template-columns:repeat(2,1fr)}
+  section{break-inside:auto}
+  a[href]::after{content:""}
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap mast">
+    <div class="mast-id">
+      <div class="monogram" aria-hidden="true">FRI</div>
+      <div>
+        <p class="mast-eyebrow">Campus &amp; staff rotation &middot; 2026&ndash;2027</p>
+        <h1>Friday Rotation Board</h1>
+        <p class="mast-sub" id="mastSub"></p>
+      </div>
+    </div>
+    <div class="mast-tools">
+      <button class="tool" id="jumpBtn" type="button">Jump to next Friday</button>
+      <button class="tool" id="printBtn" type="button">Print</button>
+      <button class="tool" id="themeBtn" type="button" aria-label="Switch colour theme"><span id="themeIcon">◐</span> <span id="themeLabel">Auto</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="idbar">
+  <div class="wrap idbar-in">
+    <span class="idbar-label" id="whoLabel">I am</span>
+    <div class="who" id="who" role="group" aria-labelledby="whoLabel"></div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section aria-labelledby="spotHead">
+    <h2 id="spotHead" class="sr">Next Friday</h2>
+    <div class="spot" id="spot"></div>
+  </section>
+
+  <section aria-labelledby="tilesHead">
+    <h2 id="tilesHead" class="sr">At a glance</h2>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+
+  <section id="requests" aria-labelledby="reqHead">
+    <header>
+      <h2 id="reqHead">Friday availability requests</h2>
+      <p class="hint">Requests protect availability; they do not change coverage until approved.</p>
+    </header>
+    <div class="request-panel">
+      <div class="request-intro">
+        <p class="eyebrow">Plan around real life</p>
+        <h3>Request a Friday off</h3>
+        <p>Choose your name and the Friday you need protected. The board shows your current assignment before opening a pre-addressed school Gmail message to the schedule manager.</p>
+        <div class="request-callout"><b>Important:</b> requesting a date does not automatically remove you from duty. Coverage is rebalanced only after the request is approved, so we never create a silent staffing hole.</div>
+      </div>
+      <form class="request-form" id="requestForm">
+        <div class="req-grid">
+          <div class="req-field">
+            <label for="reqStaff">Staff member</label>
+            <select id="reqStaff" required></select>
+          </div>
+          <div class="req-field">
+            <label for="reqFriday">Friday requested</label>
+            <select id="reqFriday" required></select>
+          </div>
+          <div class="req-field">
+            <label for="reqPriority">Request level</label>
+            <select id="reqPriority">
+              <option value="Cannot work this Friday">Cannot work this Friday</option>
+              <option value="Prefer this Friday off">Prefer this Friday off</option>
+            </select>
+          </div>
+          <div class="req-field">
+            <label>Flexibility</label>
+            <label class="req-check"><input type="checkbox" id="reqSwap" checked> I can swap to another Friday if needed</label>
+          </div>
+          <div class="req-field full">
+            <label for="reqNote">Optional note</label>
+            <textarea id="reqNote" maxlength="500" placeholder="Anything the schedule manager should know. No reason is required."></textarea>
+          </div>
+        </div>
+        <p class="req-status" id="reqStatus"></p>
+        <div class="req-actions">
+          <button class="btn" type="submit">Open request email</button>
+          <button class="btn ghost" type="button" id="reqCopy">Copy request</button>
+        </div>
+        <p class="req-small">The email is addressed to the schedule manager. Staff still press Send in Gmail; the website never sends mail silently.</p>
+      </form>
+    </div>
+  </section>
+
+  <section id="roster" aria-labelledby="rosterHead">
+    <header>
+      <h2 id="rosterHead">The Fridays</h2>
+      <p class="hint">Select any Friday for the full assignment sheet.</p>
+    </header>
+    <div class="controls">
+      <div class="ctl">
+        <label for="q">Search</label>
+        <input id="q" type="search" placeholder="name, note, date&hellip;" autocomplete="off">
+      </div>
+      <div class="ctl">
+        <label for="fType">Type</label>
+        <select id="fType">
+          <option value="">All Fridays</option>
+          <option value="REGULAR FRIDAY">Regular</option>
+          <option value="TRAINING FRIDAY">Training</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="NO SCHOOL / NO SCHEDULE">No school</option>
+        </select>
+      </div>
+      <div class="ctl">
+        <label for="fMonth">Month</label>
+        <select id="fMonth"><option value="">All months</option></select>
+      </div>
+      <label class="switch" id="mineWrap" hidden>
+        <input type="checkbox" id="onlyMine"> Only my workdays
+      </label>
+      <div class="segs" role="group" aria-label="View">
+        <button type="button" id="vCards" aria-pressed="true">Roster</button>
+        <button type="button" id="vGrid" aria-pressed="false">Coverage grid</button>
+      </div>
+      <span class="count mono" id="count"></span>
+    </div>
+    <div class="statkey" id="statKey"></div>
+    <div id="cardsView"></div>
+    <div id="gridView" hidden></div>
+    <p class="empty" id="empty" hidden>No Fridays match those filters. <button class="btn ghost" type="button" id="clearBtn">Clear filters</button></p>
+  </section>
+
+  <section id="workload" aria-labelledby="wlHead">
+    <header>
+      <h2 id="wlHead">Workdays by month</h2>
+      <p class="hint">A workday is a full Friday, training attendance, or pre-training coverage.</p>
+    </header>
+    <div class="heat" id="heat"></div>
+    <div class="legend" id="heatLegend"></div>
+    <p class="note" id="fairness"></p>
+  </section>
+
+  <section id="dayplan" aria-labelledby="dpHead">
+    <header>
+      <h2 id="dpHead">The Friday day</h2>
+      <p class="hint">Student day 7:30 a.m. &ndash; 1:00 p.m. &middot; staff until 1:30 p.m.</p>
+    </header>
+    <div class="dayplan">
+      <div class="timeline" id="timeline"></div>
+      <div id="duties"></div>
+    </div>
+  </section>
+
+  <section id="rules" aria-labelledby="rulesHead">
+    <header>
+      <h2 id="rulesHead">How to read this schedule</h2>
+    </header>
+    <div class="rules" id="rulesGrid"></div>
+    <p class="note" id="practice"></p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Friday Rotation Board &middot; 2026&ndash;2027 &middot; built from the <span class="mono">Friday_School_Schedule_2026-2027</span> workbook.</span>
+    <span id="stamp" class="mono"></span>
+  </div>
+</footer>
+
+<dialog id="detail" aria-labelledby="dTitle">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div>
+        <h3 id="dTitle"></h3>
+        <p class="sd" id="dSub"></p>
+      </div>
+      <button class="x" id="dClose" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="sheet-body" id="dBody"></div>
+  </div>
+</dialog>
+
+<dialog id="icsBox" aria-labelledby="icsTitle">
+  <div class="sheet">
+    <div class="sheet-head">
+      <div>
+        <h3 id="icsTitle">Calendar file</h3>
+        <p class="sd">Copy this text, save it as a <span class="mono">.ics</span> file, and open it with your calendar app.</p>
+      </div>
+      <button class="x" id="icsClose" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="sheet-body">
+      <textarea class="ics" id="icsText" readonly spellcheck="false"></textarea>
+      <div class="spot-cta">
+        <button class="btn" type="button" id="icsCopy">Copy calendar text</button>
+        <a class="btn ghost" id="icsDl" download="friday-schedule.ics" href="#">Download .ics</a>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="application/json" id="data">
+{"title":"FRIDAY CAMPUS & STAFF ROTATION | 2026–2027","subtitle":"Office hours 7:30 a.m.–1:30 p.m. | Student day ends 1:00 p.m. | Schedule through May 21, 2027","staff":["Lingam","Evans","Latoya","Meda"],"months":["Aug 2026","Sep 2026","Oct 2026","Nov 2026","Dec 2026","Jan 2027","Feb 2027","Mar 2027","Apr 2027","May 2027"],"fridays":[{"date":"2026-08-07","type":"COMPLETED","morning1":"Dorr","morning2":"Lingam","morningExtra":"Latoya","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Already completed","status":{"Dorr":"Full Day 7:30–1:30","Lingam":"Full Day 7:30–1:30","Latoya":"Full Day 7:30–1:30","Meda":"On Campus (Completed)","McKinley":"OFF"}},{"date":"2026-08-14","type":"COMPLETED","morning1":"McKinley","morning2":"Evans","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Already completed","status":{"Dorr":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"On Campus (Completed)","McKinley":"Full Day 7:30–1:30"}},{"date":"2026-08-21","type":"TRAINING FRIDAY","morning1":"Dorr","morning2":"Meda","morningExtra":"","studentCoverage":"Cortni + Meda 11:30–1:00","officeCoverage":"Jenny 7:30–11:30 | OPEN 11:30–1:30 (Admin to assign)","training":"Dorr, Lingam, McKinley, Evans, Latoya 11:30–1:30","note":"Sylivia Brito volunteered. The other morning teacher joins training at 11:30. Office coverage remains open.","status":{"Dorr":"Morning Coverage + Training","Lingam":"Training 11:30–1:30","Evans":"Training 11:30–1:30","Latoya":"Training 11:30–1:30","Meda":"Full-Day Coverage — Misses Training","McKinley":"Training 11:30–1:30"}},{"date":"2026-08-28","type":"REGULAR FRIDAY","morning1":"Latoya","morning2":"McKinley","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Dorr":"OFF","Lingam":"OFF","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"OFF","McKinley":"Full Day 7:30–1:30"}},{"date":"2026-09-04","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Latoya","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"Full Day 7:30–1:30","Meda":"OFF"}},{"date":"2026-09-11","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Evans","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"OFF"}},{"date":"2026-09-18","type":"TRAINING FRIDAY","morning1":"Evans","morning2":"Meda","morningExtra":"","studentCoverage":"Cortni + Evans 11:30–1:00","officeCoverage":"Jenny 7:30–11:30 | OPEN 11:30–1:30 (Admin to assign)","training":"Lingam, Latoya, Meda 11:30–1:30","note":"Evans stays with Cortni and misses this training. Meda covers the morning and joins training at 11:30. Office coverage remains open.","status":{"Lingam":"Training 11:30–1:30","Evans":"Full-Day Coverage — Misses Training","Latoya":"Training 11:30–1:30","Meda":"Morning Coverage + Training"}},{"date":"2026-09-25","type":"REGULAR FRIDAY","morning1":"Latoya","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"Full Day 7:30–1:30"}},{"date":"2026-10-02","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"OFF","Latoya":"OFF","Meda":"Full Day 7:30–1:30"}},{"date":"2026-10-09","type":"NO SCHOOL / NO SCHEDULE","morning1":"—","morning2":"—","morningExtra":"","studentCoverage":"—","officeCoverage":"—","training":"—","note":"Excluded date","status":{"Lingam":"CLOSED","Evans":"CLOSED","Latoya":"CLOSED","Meda":"CLOSED"}},{"date":"2026-10-16","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Latoya","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"OFF"}},{"date":"2026-10-23","type":"TRAINING FRIDAY","morning1":"Latoya","morning2":"Lingam","morningExtra":"","studentCoverage":"Cortni + Latoya 11:30–1:00","officeCoverage":"Jenny 7:30–11:30 | OPEN 11:30–1:30 (Admin to assign)","training":"Lingam, Evans, Meda 11:30–1:30","note":"Latoya stays with Cortni and misses this training. Lingam covers the morning and joins training at 11:30. Office coverage remains open.","status":{"Lingam":"Morning Coverage + Training","Evans":"Training 11:30–1:30","Latoya":"Full-Day Coverage — Misses Training","Meda":"Training 11:30–1:30"}},{"date":"2026-10-30","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"Full Day 7:30–1:30"}},{"date":"2026-11-06","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Latoya","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"OFF"}},{"date":"2026-11-13","type":"TRAINING FRIDAY","morning1":"Evans","morning2":"Latoya","morningExtra":"","studentCoverage":"Cortni + Evans 11:30–1:00","officeCoverage":"Jenny 7:30–11:30 | OPEN 11:30–1:30 (Admin to assign)","training":"Lingam, Latoya, Meda 11:30–1:30","note":"Evans stays with Cortni and misses this training. Latoya covers the morning and joins training at 11:30. Office coverage remains open.","status":{"Lingam":"Training 11:30–1:30","Evans":"Full-Day Coverage — Misses Training","Latoya":"Morning Coverage + Training","Meda":"Training 11:30–1:30"}},{"date":"2026-11-20","type":"REGULAR FRIDAY","morning1":"Latoya","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"Full Day 7:30–1:30"}},{"date":"2026-11-27","type":"NO SCHOOL / NO SCHEDULE","morning1":"—","morning2":"—","morningExtra":"","studentCoverage":"—","officeCoverage":"—","training":"—","note":"Excluded date","status":{"Lingam":"CLOSED","Evans":"CLOSED","Latoya":"CLOSED","Meda":"CLOSED"}},{"date":"2026-12-04","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Latoya","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"Full Day 7:30–1:30","Meda":"OFF"}},{"date":"2026-12-11","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Evans","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"OFF"}},{"date":"2026-12-18","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"OFF","Latoya":"OFF","Meda":"Full Day 7:30–1:30"}},{"date":"2026-12-25","type":"NO SCHOOL / NO SCHEDULE","morning1":"—","morning2":"—","morningExtra":"","studentCoverage":"—","officeCoverage":"—","training":"—","note":"Excluded date","status":{"Lingam":"CLOSED","Evans":"CLOSED","Latoya":"CLOSED","Meda":"CLOSED"}},{"date":"2027-01-01","type":"NO SCHOOL / NO SCHEDULE","morning1":"—","morning2":"—","morningExtra":"","studentCoverage":"—","officeCoverage":"—","training":"—","note":"Excluded date","status":{"Lingam":"CLOSED","Evans":"CLOSED","Latoya":"CLOSED","Meda":"CLOSED"}},{"date":"2027-01-08","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Latoya","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"Full Day 7:30–1:30","Meda":"OFF"}},{"date":"2027-01-15","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"Full Day 7:30–1:30"}},{"date":"2027-01-22","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"OFF","Latoya":"OFF","Meda":"Full Day 7:30–1:30"}},{"date":"2027-01-29","type":"TRAINING FRIDAY","morning1":"Lingam","morning2":"Meda","morningExtra":"","studentCoverage":"Cortni + Lingam 11:30–1:00","officeCoverage":"Jenny 7:30–11:30 | OPEN 11:30–1:30 (Admin to assign)","training":"Evans, Latoya, Meda 11:30–1:30","note":"Lingam stays with Cortni and misses this training. Meda covers the morning and joins training at 11:30. Office coverage remains open.","status":{"Lingam":"Full-Day Coverage — Misses Training","Evans":"Training 11:30–1:30","Latoya":"Training 11:30–1:30","Meda":"Morning Coverage + Training"}},{"date":"2027-02-05","type":"REGULAR FRIDAY","morning1":"Latoya","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"Full Day 7:30–1:30"}},{"date":"2027-02-12","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Evans","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"OFF"}},{"date":"2027-02-19","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"Full Day 7:30–1:30"}},{"date":"2027-02-26","type":"TRAINING FRIDAY","morning1":"Latoya","morning2":"Evans","morningExtra":"","studentCoverage":"Cortni + Latoya 11:30–1:00","officeCoverage":"Jenny 7:30–11:30 | OPEN 11:30–1:30 (Admin to assign)","training":"Lingam, Evans, Meda 11:30–1:30","note":"Latoya stays with Cortni and misses this training. Evans covers the morning and joins training at 11:30. Office coverage remains open.","status":{"Lingam":"Training 11:30–1:30","Evans":"Morning Coverage + Training","Latoya":"Full-Day Coverage — Misses Training","Meda":"Training 11:30–1:30"}},{"date":"2027-03-05","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Latoya","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"OFF"}},{"date":"2027-03-12","type":"NO SCHOOL / NO SCHEDULE","morning1":"—","morning2":"—","morningExtra":"","studentCoverage":"—","officeCoverage":"—","training":"—","note":"Excluded date","status":{"Lingam":"CLOSED","Evans":"CLOSED","Latoya":"CLOSED","Meda":"CLOSED"}},{"date":"2027-03-19","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Latoya","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"Full Day 7:30–1:30","Meda":"OFF"}},{"date":"2027-03-26","type":"TRAINING FRIDAY","morning1":"Lingam","morning2":"Evans","morningExtra":"","studentCoverage":"Cortni + Lingam 11:30–1:00","officeCoverage":"Jenny 7:30–11:30 | OPEN 11:30–1:30 (Admin to assign)","training":"Evans, Latoya, Meda 11:30–1:30","note":"Lingam stays with Cortni and misses this training. Evans covers the morning and joins training at 11:30. Office coverage remains open.","status":{"Lingam":"Full-Day Coverage — Misses Training","Evans":"Morning Coverage + Training","Latoya":"Training 11:30–1:30","Meda":"Training 11:30–1:30"}},{"date":"2027-04-02","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Evans","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"OFF"}},{"date":"2027-04-09","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Latoya","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"OFF"}},{"date":"2027-04-16","type":"REGULAR FRIDAY","morning1":"Latoya","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"OFF","Latoya":"Full Day 7:30–1:30","Meda":"Full Day 7:30–1:30"}},{"date":"2027-04-23","type":"TRAINING FRIDAY","morning1":"Meda","morning2":"Lingam","morningExtra":"","studentCoverage":"Cortni + Meda 11:30–1:00","officeCoverage":"Jenny 7:30–11:30 | OPEN 11:30–1:30 (Admin to assign)","training":"Lingam, Evans, Latoya 11:30–1:30","note":"Meda stays with Cortni and misses this training. Lingam covers the morning and joins training at 11:30. Office coverage remains open.","status":{"Lingam":"Morning Coverage + Training","Evans":"Training 11:30–1:30","Latoya":"Training 11:30–1:30","Meda":"Full-Day Coverage — Misses Training"}},{"date":"2027-04-30","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Lingam","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"OFF"}},{"date":"2027-05-07","type":"REGULAR FRIDAY","morning1":"Lingam","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"Full Day 7:30–1:30","Evans":"OFF","Latoya":"OFF","Meda":"Full Day 7:30–1:30"}},{"date":"2027-05-14","type":"REGULAR FRIDAY","morning1":"Evans","morning2":"Meda","morningExtra":"","studentCoverage":"Assigned teachers continue to 1:00","officeCoverage":"Jenny 7:30–11:30 | Cortni 9:30–1:30","training":"—","note":"Student day ends at 1:00; assigned staff remain through 1:30.","status":{"Lingam":"OFF","Evans":"Full Day 7:30–1:30","Latoya":"OFF","Meda":"Full Day 7:30–1:30"}},{"date":"2027-05-21","type":"NO SCHOOL / NO SCHEDULE","morning1":"—","morning2":"—","morningExtra":"","studentCoverage":"—","officeCoverage":"—","training":"—","note":"Last day of school — no Friday staff scheduled","status":{"Lingam":"CLOSED","Evans":"CLOSED","Latoya":"CLOSED","Meda":"CLOSED"}}],"summary":[{"name":"Lingam","months":{"Aug 2026":2,"Sep 2026":2,"Oct 2026":3,"Nov 2026":2,"Dec 2026":2,"Jan 2027":2,"Feb 2027":2,"Mar 2027":2,"Apr 2027":4,"May 2027":1},"total":22,"trainingsMissed":2},{"name":"Evans","months":{"Aug 2026":2,"Sep 2026":3,"Oct 2026":2,"Nov 2026":1,"Dec 2026":2,"Jan 2027":3,"Feb 2027":3,"Mar 2027":2,"Apr 2027":3,"May 2027":1},"total":22,"trainingsMissed":2},{"name":"Latoya","months":{"Aug 2026":3,"Sep 2026":3,"Oct 2026":2,"Nov 2026":3,"Dec 2026":1,"Jan 2027":2,"Feb 2027":2,"Mar 2027":3,"Apr 2027":3,"May 2027":0},"total":22,"trainingsMissed":2},{"name":"Meda","months":{"Aug 2026":3,"Sep 2026":2,"Oct 2026":3,"Nov 2026":2,"Dec 2026":1,"Jan 2027":3,"Feb 2027":3,"Mar 2027":1,"Apr 2027":2,"May 2027":2},"total":22,"trainingsMissed":2}],"summaryIntro":"From September 4 forward, the active Friday rotation is Lingam, Evans, Latoya, and Meda. A workday includes a full Friday, training attendance, or pre-training coverage.","fairness":"Fairness note: After removing Dorr and McKinley from active Friday duty, the four remaining staff each finish the year with exactly 22 Friday workdays and exactly 2 missed trainings.","rules":[{"item":"Active Friday rotation","rule":"Beginning September 4, 2026, Friday duty rotates among Lingam, Evans, Latoya, and Meda. Dorr and McKinley are no longer assigned future Friday duty; August history remains visible."},{"item":"Minimum student coverage","rule":"Regular Fridays have two assigned staff with students. Training Fridays have two staff covering 7:30–11:30; at 11:30 one stays with Cortni and the other joins training."},{"item":"Regular Friday","rule":"Two assigned coverage staff work 7:30 a.m.–1:30 p.m.; the other two active staff are off."},{"item":"Training Friday","rule":"All four active staff are working: two cover students 7:30–11:30, one of those stays with Cortni through 1:00 dismissal, and the other three attend training 11:30–1:30."},{"item":"Day-off requests","rule":"Staff may request a future Friday off from this page. A request does not change the schedule until it is approved and the coverage plan is updated."},{"item":"Missed-training rotation","rule":"The stay-back assignment is balanced so Lingam, Evans, Latoya, and Meda each miss exactly two trainings across the school year."},{"item":"Remaining office gap","rule":"On training Fridays, student coverage is complete but the 11:30–1:30 office shift remains OPEN for administration to assign."},{"item":"Student dismissal","rule":"Students leave at 1:00 p.m.; scheduled employees remain until 1:30 p.m."}],"practice":"Use the Friday-off request form before approving swaps. Keep at least two staff on student coverage, preserve training coverage, and rebuild the rotation after approved requests so the workload stays balanced.","dayBlocks":[{"time":"7:30–7:55","activity":"Gates open, student check-in w/teacher in MPR, leave bags, play outside or quiet activity"},{"time":"7:55–8:10","activity":"Line up at MPR door.  Attendance, announcements, Friday expectations"},{"time":"","activity":"Travel to designated leveled classroom"},{"time":"8:10–9:10","activity":"Academic Block 1: reading, writing, math support, or missing work"},{"time":"9:10–9:30","activity":"Brain break and recess"},{"time":"9:30–10:30","activity":"Academic Block 2: small-group instruction, tutoring, or enrichment"},{"time":"10:30–10:40","activity":"Snack, restroom, and movement break"},{"time":"10:40–11:35","activity":"Project Block: STEM, art, music, research, or collaborative projects"},{"time":"11:35–11:55","activity":"Lunch — 20 minutes (in classroom)"},{"time":"11:55–12:15","activity":"Recess or supervised outdoor activity"},{"time":"12:15–12:40","activity":"Choice/enrichment block, study hall, or finish missing assignments"},{"time":"12:40–12:50","activity":"Classroom cleanup and student reflection"},{"time":"12:50–1:00","activity":"Pack up and move to dismissal areas"},{"time":"1:00","activity":"Dismissal"}],"duties":{"morning":{"label":"Morning Duties - 4 STAFF","roles":["Drop off","Outside Duty","MPR Duty","Office Duty"],"assigned":["","","","MEDA"]},"dismissal":{"label":"Dismissal Duties - 4 STAFF","roles":["pick up","watching ALL students for dismissal","walk student out gate / help pick up close gates","Office Duty"],"assigned":["","","","MEDA"]},"suggestion":"we can change this once the weather cools off for dismissal, we could just have all students sit outside by the back gate"},"formerStaff":["Dorr","McKinley"],"rotationEffectiveDate":"2026-09-04","requestManagerEmail":"jacob.evans@explore.academy"}
+</script>
+
+<script>
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("data").textContent);
+
+  /* ---------- helpers ---------- */
+  var norm = function (s) {
+    return String(s == null ? "" : s).replace(/[‐-―]/g, "-").replace(/\s+/g, " ").trim().toLowerCase();
+  };
+  var esc = function (s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var parseDate = function (iso) {
+    var p = iso.split("-");
+    return new Date(+p[0], +p[1] - 1, +p[2]);
+  };
+  var fmtLong = function (d) { return MONTHS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear(); };
+  var fmtShort = function (d) { return MON[d.getMonth()] + " " + d.getDate(); };
+  var monthKey = function (d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
+  var monthName = function (d) { return MONTHS[d.getMonth()] + " " + d.getFullYear(); };
+  var DAY = 864e5;
+  var today = (function () { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); })();
+  var daysFrom = function (d) { return Math.round((d - today) / DAY); };
+  var relative = function (n) {
+    if (n === 0) return "today";
+    if (n === 1) return "tomorrow";
+    if (n > 0) return "in " + n + " days";
+    if (n === -1) return "yesterday";
+    return Math.abs(n) + " days ago";
+  };
+
+  /* ---------- vocabularies ---------- */
+  var STATUS = {
+    "full day 7:30-1:30":                 { cls: "st-work",   short: "Full day",     label: "Full day, 7:30 a.m. – 1:30 p.m.", cal: "Friday duty — full day",            work: true,  s: "0730", e: "1330" },
+    "morning coverage + training":        { cls: "st-morn",   short: "Morning + training", label: "Morning coverage, then training", cal: "Friday morning duty, then training", work: true, s: "0730", e: "1330" },
+    "training 11:30-1:30":                { cls: "st-train",  short: "Training",     label: "Teacher training, 11:30 – 1:30",  cal: "Teacher training",                  work: true,  s: "1130", e: "1330" },
+    "full-day coverage - misses training":{ cls: "st-stays",  short: "Stays w/ students", label: "Full-day student coverage — misses this training", cal: "Friday duty — student coverage (miss training)", work: true, s: "0730", e: "1330" },
+    "on campus (completed)":              { cls: "st-done",   short: "On campus",    label: "On campus (already completed)",   cal: "Friday duty",                       work: true,  s: "0730", e: "1330" },
+    "off":                                { cls: "st-off",    short: "Off",          label: "Off — no Friday duty",            work: false },
+    "closed":                             { cls: "st-closed", short: "No school",    label: "Campus closed — no schedule",     work: false }
+  };
+  var statusOf = function (raw) {
+    return STATUS[norm(raw)] || { cls: "st-off", short: raw || "—", label: raw || "—", work: false };
+  };
+  var TYPE = {
+    "regular friday":          { cls: "b-regular",  short: "Regular",   full: "Regular Friday" },
+    "training friday":         { cls: "b-training", short: "Training",  full: "Training Friday" },
+    "completed":               { cls: "b-completed",short: "Completed", full: "Completed" },
+    "no school / no schedule": { cls: "b-noschool", short: "No school", full: "No school — no schedule" }
+  };
+  var typeOf = function (raw) {
+    return TYPE[norm(raw)] || { cls: "b-regular", short: raw, full: raw };
+  };
+  var isClosed = function (f) { return norm(f.type) === "no school / no schedule"; };
+
+  /* ---------- derived model ---------- */
+  D.fridays.forEach(function (f) {
+    f.d = parseDate(f.date);
+    f.mk = monthKey(f.d);
+    f.openOffice = /open/i.test(f.officeCoverage || "");
+    f.staysWith = "";
+    f.morningTrain = "";
+    D.staff.forEach(function (n) {
+      var k = norm(f.status[n]);
+      if (k === "full-day coverage - misses training") f.staysWith = n;
+      if (k === "morning coverage + training") f.morningTrain = n;
+    });
+    f.hay = norm([f.date, fmtLong(f.d), f.type, f.morning1, f.morning2, f.morningExtra,
+      f.studentCoverage, f.officeCoverage, f.training, f.note, monthName(f.d)].join(" "));
+  });
+  var SCHOOL = D.fridays.filter(function (f) { return !isClosed(f); });
+  var TRAINING = D.fridays.filter(function (f) { return norm(f.type) === "training friday"; });
+  var CLOSEDD = D.fridays.filter(isClosed);
+  var OPEN = D.fridays.filter(function (f) { return f.openOffice; });
+  var upcoming = SCHOOL.filter(function (f) { return daysFrom(f.d) >= 0; });
+  var nextFriday = upcoming[0] || SCHOOL[SCHOOL.length - 1];
+  var byName = {};
+  D.summary.forEach(function (r) { byName[r.name] = r; });
+  var offCount = {};
+  D.staff.forEach(function (n) {
+    offCount[n] = D.fridays.filter(function (f) { return norm(f.status[n]) === "off"; }).length;
+  });
+
+  /* ---------- state ---------- */
+  var state = { me: "", view: "cards", type: "", month: "", q: "", onlyMine: false };
+  var readHash = function () {
+    var h = new URLSearchParams(location.hash.replace(/^#/, ""));
+    var me = h.get("me") || "";
+    if (D.staff.indexOf(me) > -1) state.me = me;
+    if (h.get("view") === "grid") state.view = "grid";
+  };
+  var writeHash = function () {
+    var p = new URLSearchParams();
+    if (state.me) p.set("me", state.me);
+    if (state.view === "grid") p.set("view", "grid");
+    var s = p.toString();
+    history.replaceState(null, "", s ? "#" + s : location.pathname + location.search);
+  };
+  try {
+    var saved = localStorage.getItem("friday.me");
+    if (saved && D.staff.indexOf(saved) > -1) state.me = saved;
+    var sv = localStorage.getItem("friday.view");
+    if (sv === "grid" || sv === "cards") state.view = sv;
+  } catch (e) { /* storage unavailable */ }
+  readHash();
+
+  /* ---------- theme ---------- */
+  var themes = ["auto", "light", "dark"];
+  var icons = { auto: "◐", light: "☀", dark: "☽" };
+  var theme = "auto";
+  try { theme = localStorage.getItem("friday.theme") || "auto"; } catch (e) {}
+  var applyTheme = function () {
+    if (theme === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", theme);
+    $("themeIcon").textContent = icons[theme];
+    $("themeLabel").textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+  };
+  $("themeBtn").addEventListener("click", function () {
+    theme = themes[(themes.indexOf(theme) + 1) % 3];
+    try { localStorage.setItem("friday.theme", theme); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();
+
+  /* ---------- toast ---------- */
+  var toastTimer;
+  var toast = function (msg, actionLabel, action) {
+    var t = $("toast");
+    t.innerHTML = "<span>" + esc(msg) + "</span>";
+    if (actionLabel) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = actionLabel;
+      b.addEventListener("click", function () { t.classList.remove("on"); action(); });
+      t.appendChild(b);
+    }
+    t.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("on"); }, actionLabel ? 9000 : 3200);
+  };
+
+  /* ---------- identity bar ---------- */
+  var renderWho = function () {
+    var html = '<button type="button" class="all" data-who="" aria-pressed="' + (state.me ? "false" : "true") + '">Everyone</button>';
+    D.staff.forEach(function (n) {
+      html += '<button type="button" data-who="' + esc(n) + '" aria-pressed="' + (state.me === n ? "true" : "false") + '">' + esc(n) + "</button>";
+    });
+    $("who").innerHTML = html;
+  };
+  $("who").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button[data-who]");
+    if (!b) return;
+    state.me = b.getAttribute("data-who");
+    if (!state.me) state.onlyMine = false;
+    try { localStorage.setItem("friday.me", state.me); } catch (e) {}
+    renderAll();
+  });
+
+  /* ---------- spotlight ---------- */
+  var renderSpot = function () {
+    var f = nextFriday, n = daysFrom(f.d), me = state.me;
+    var tag = n === 0 ? "Today" : n > 0 ? "Next Friday" : "Last Friday of the year";
+    var st = me ? statusOf(f.status[me]) : null;
+    var line;
+    if (me) {
+      line = st.work
+        ? "<strong>" + esc(me) + " is on: " + esc(st.label) + "</strong>"
+        : "<strong>" + esc(me) + " is " + esc(st.label.toLowerCase()) + "</strong>";
+      if (st.work && f.staysWith === me) line += " &mdash; you stay with Cortni until 1:00 dismissal.";
+    } else if (isClosed(f)) {
+      line = "<strong>No school.</strong> " + esc(f.note);
+    } else {
+      line = "Morning coverage <strong>" + esc(f.morning1) + "</strong> and <strong>" + esc(f.morning2) + "</strong>"
+        + (f.morningExtra ? ", plus <strong>" + esc(f.morningExtra) + "</strong>" : "") + ". "
+        + esc(f.studentCoverage) + ".";
+    }
+    $("spot").innerHTML =
+      '<div><div class="spot-when"><span class="spot-tag">' + esc(tag) + '</span>'
+      + '<span class="spot-date">Friday, ' + esc(fmtLong(f.d)) + "</span>"
+      + '<span class="badge ' + typeOf(f.type).cls + '">' + esc(typeOf(f.type).short) + "</span>"
+      + '<span class="mono" style="color:var(--ink-3);font-size:.813rem">' + esc(relative(n)) + "</span></div>"
+      + '<p class="spot-line">' + line + "</p></div>"
+      + '<div class="spot-cta">'
+      + '<button class="btn" type="button" data-open="' + f.date + '">Full assignment sheet</button>'
+      + '<button class="btn ghost" type="button" id="icsBtn">' + (state.me ? "Add my Fridays to calendar" : "Add the year to a calendar") + "</button></div>";
+    $("icsBtn").addEventListener("click", makeIcs);
+  };
+
+  /* ---------- tiles ---------- */
+  var renderTiles = function () {
+    var t = [];
+    if (state.me) {
+      var s = byName[state.me] || { total: 0, trainingsMissed: 0 };
+      var mineNext = SCHOOL.filter(function (f) { return daysFrom(f.d) >= 0 && statusOf(f.status[state.me]).work; })[0];
+      t.push({ k: "My workdays", v: s.total, n: "Fridays on duty this year" });
+      t.push({ k: "My Fridays off", v: offCount[state.me], n: "of " + SCHOOL.length + " school Fridays" });
+      t.push({ k: "Trainings I miss", v: s.trainingsMissed, n: "of " + TRAINING.length + " training Fridays" });
+      t.push({
+        k: "My next workday",
+        v: mineNext ? fmtShort(mineNext.d) : "—",
+        n: mineNext ? relative(daysFrom(mineNext.d)) : "none left this year",
+        hot: true, text: true
+      });
+    } else {
+      t.push({ k: "Fridays with school", v: SCHOOL.length, n: "of " + D.fridays.length + " Fridays listed" });
+      t.push({ k: "Training Fridays", v: TRAINING.length, n: "staff training 11:30 – 1:30" });
+      t.push({ k: "Open office shifts", v: OPEN.length, n: "11:30 – 1:30, admin to assign", hot: true });
+      t.push({ k: "No-school Fridays", v: CLOSEDD.length, n: "campus closed" });
+      t.push({ k: "Active Friday staff", v: D.staff.length, n: "balanced to 22 workdays each" });
+    }
+    $("tiles").innerHTML = t.map(function (x) {
+      return '<div class="tile' + (x.hot ? " hot" : "") + '"><p class="tile-k">' + esc(x.k) + "</p>"
+        + '<p class="tile-v' + (x.text ? " text" : "") + '">' + esc(x.v) + '</p><p class="tile-n">' + esc(x.n) + "</p></div>";
+    }).join("");
+  };
+
+
+  /* ---------- Friday-off requests ---------- */
+  var requestRows = function () {
+    return SCHOOL.filter(function (f) { return daysFrom(f.d) >= 0; });
+  };
+  var requestRecord = function () {
+    var staff = $("reqStaff").value;
+    var iso = $("reqFriday").value;
+    var f = D.fridays.filter(function (x) { return x.date === iso; })[0];
+    var st = f && staff ? statusOf(f.status[staff]) : null;
+    return {
+      staff: staff,
+      friday: f,
+      priority: $("reqPriority").value,
+      swap: $("reqSwap").checked,
+      note: $("reqNote").value.trim(),
+      status: st
+    };
+  };
+  var updateRequestStatus = function () {
+    var r = requestRecord();
+    if (!r.friday || !r.staff || !r.status) {
+      $("reqStatus").innerHTML = "<strong>Select a staff member and Friday.</strong>";
+      return;
+    }
+    var msg = "<strong>Current schedule:</strong> " + esc(r.status.label) + ".";
+    if (!r.status.work) msg += " This date is already off; submitting a request protects it when later requests are rebalanced.";
+    else if (r.friday.staysWith === r.staff) msg += " You are currently the stay-back staff member for this training.";
+    $("reqStatus").innerHTML = msg;
+  };
+  var requestText = function () {
+    var r = requestRecord();
+    if (!r.friday || !r.staff) return "";
+    return [
+      "FRIDAY OFF REQUEST",
+      "",
+      "Staff: " + r.staff,
+      "Friday: Friday, " + fmtLong(r.friday.d),
+      "Request level: " + r.priority,
+      "Current schedule: " + (r.status ? r.status.label : "Not listed"),
+      "Can swap to another Friday: " + (r.swap ? "Yes" : "No"),
+      "Note: " + (r.note || "—"),
+      "",
+      "I understand this request does not change the posted schedule until it is approved and coverage is updated."
+    ].join("\n");
+  };
+  var copyRequest = function () {
+    var text = requestText();
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast("Friday-off request copied."); });
+      return;
+    }
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast("Friday-off request copied."); }
+    catch (e) { toast("Copy the request text manually."); }
+    ta.remove();
+  };
+  var openRequestEmail = function () {
+    var r = requestRecord();
+    if (!r.friday || !r.staff) return;
+    var subject = "[Friday Off Request] " + r.staff + " — " + fmtShort(r.friday.d) + ", " + r.friday.d.getFullYear();
+    var body = requestText();
+    var to = D.requestManagerEmail || "";
+    var gmail = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(to)
+      + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+    var w = window.open(gmail, "_blank");
+    if (!w) location.href = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  };
+  var renderRequestForm = function () {
+    $("reqStaff").innerHTML = D.staff.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + "</option>"; }).join("");
+    var rr = requestRows();
+    $("reqFriday").innerHTML = rr.map(function (f) {
+      return '<option value="' + f.date + '">' + esc(fmtLong(f.d)) + " · " + esc(typeOf(f.type).short) + "</option>";
+    }).join("");
+    if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;
+    $("reqStaff").addEventListener("change", updateRequestStatus);
+    $("reqFriday").addEventListener("change", updateRequestStatus);
+    $("reqPriority").addEventListener("change", updateRequestStatus);
+    $("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); openRequestEmail(); });
+    $("reqCopy").addEventListener("click", copyRequest);
+    updateRequestStatus();
+  };
+  var syncRequestStaff = function () {
+    if (!$("reqStaff")) return;
+    if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;
+    updateRequestStatus();
+  };
+
+  /* ---------- filtering ---------- */
+  var visible = function () {
+    var q = norm(state.q);
+    return D.fridays.filter(function (f) {
+      if (state.type && f.type !== state.type) return false;
+      if (state.month && f.mk !== state.month) return false;
+      if (state.onlyMine && state.me && !statusOf(f.status[state.me]).work) return false;
+      if (q && f.hay.indexOf(q) === -1) return false;
+      return true;
+    });
+  };
+
+  /* ---------- roster cards ---------- */
+  var peopleChips = function (names) {
+    return '<span class="people">' + names.filter(Boolean).map(function (n) {
+      return '<span class="pchip' + (n === state.me ? " is-me" : "") + '">' + esc(n) + "</span>";
+    }).join("") + "</span>";
+  };
+
+  var cardHtml = function (f) {
+    var ty = typeOf(f.type), n = daysFrom(f.d), isToday = n === 0, closed = isClosed(f);
+    var h = '<article class="card' + (closed ? " is-closed" : "") + (isToday ? " is-today" : "")
+      + '" data-open="' + f.date + '">';
+    h += '<div class="card-top"><button type="button" class="card-date" data-open="' + f.date
+      + '" aria-label="Open the assignment sheet for Friday ' + esc(fmtLong(f.d)) + ', ' + esc(ty.full) + '">'
+      + '<span class="dow">Fri</span> ' + esc(fmtShort(f.d)) + "</button>"
+      + '<span style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:flex-end">'
+      + (isToday ? '<span class="today-flag">Today</span>' : "")
+      + '<span class="badge ' + ty.cls + '">' + esc(ty.short) + "</span></span></div>";
+
+    if (state.me) {
+      var st = statusOf(f.status[state.me]);
+      h += '<p class="mine ' + st.cls + '"><span class="mine-k">' + esc(state.me) + "</span> " + esc(st.label) + "</p>";
+    }
+
+    if (closed) {
+      h += '<div class="rows"><div class="row"><dt>Note</dt><dd>' + esc(f.note) + "</dd></div></div>";
+    } else {
+      h += '<dl class="rows">';
+      h += '<div class="row"><dt>Morning 7:30</dt><dd>' + peopleChips([f.morning1, f.morning2, f.morningExtra]) + "</dd></div>";
+      h += '<div class="row"><dt>Students 11:30</dt><dd>' + esc(f.studentCoverage) + "</dd></div>";
+      h += '<div class="row"><dt>Office</dt><dd>' + esc(f.officeCoverage)
+        + (f.openOffice ? ' <span class="openflag">Open shift</span>' : "") + "</dd></div>";
+      if (f.training && f.training !== "—") {
+        h += '<div class="row"><dt>Training</dt><dd>' + esc(f.training) + "</dd></div>";
+      }
+      h += "</dl>";
+      h += '<div class="strip" aria-hidden="true">' + D.staff.map(function (nm) {
+        var s = statusOf(f.status[nm]);
+        return '<span class="' + s.cls + '" title="' + esc(nm + ": " + s.label) + '"></span>';
+      }).join("") + "</div>";
+    }
+    h += '<div class="card-foot"><span>' + (closed ? "&mdash;" : esc(f.staysWith ? f.staysWith + " stays with Cortni" : "Assigned staff to 1:30"))
+      + "</span><span>" + esc(relative(n)) + "</span></div>";
+    return h + "</article>";
+  };
+
+  var renderCards = function (rows) {
+    var groups = [], seen = {};
+    rows.forEach(function (f) {
+      if (!seen[f.mk]) { seen[f.mk] = { key: f.mk, name: monthName(f.d), items: [] }; groups.push(seen[f.mk]); }
+      seen[f.mk].items.push(f);
+    });
+    $("cardsView").innerHTML = groups.map(function (g) {
+      return '<div class="monthgrp"><h3>' + esc(g.name) + ' <span class="mono" style="letter-spacing:0">'
+        + g.items.length + "</span></h3>"
+        + '<div class="cards">' + g.items.map(cardHtml).join("") + "</div></div>";
+    }).join("");
+  };
+
+  /* ---------- coverage grid ---------- */
+  var renderGrid = function (rows) {
+    var h = '<div class="tablewrap"><table><caption class="sr">Coverage grid: each staff member&rsquo;s assignment for every Friday</caption><thead><tr>'
+      + '<th scope="col" class="sticky-col">Friday</th><th scope="col">Type</th>'
+      + D.staff.map(function (n) {
+        return '<th scope="col" class="' + (n === state.me ? "me" : "") + '">' + esc(n) + "</th>";
+      }).join("") + "</tr></thead><tbody>";
+    rows.forEach(function (f) {
+      var ty = typeOf(f.type), isToday = daysFrom(f.d) === 0;
+      h += '<tr class="' + (isToday ? "is-today" : "") + '" data-open="' + f.date + '" style="cursor:pointer">'
+        + '<th scope="row" class="sticky-col mono" style="font-weight:600"><button type="button" class="cellbtn mono" data-open="'
+        + f.date + '">' + esc(fmtShort(f.d)) + " " + f.d.getFullYear() + "</button></th>"
+        + '<td><span class="badge ' + ty.cls + '">' + esc(ty.short) + "</span></td>";
+      D.staff.forEach(function (n) {
+        var s = statusOf(f.status[n]);
+        h += '<td class="' + (n === state.me ? "me" : "") + '"><span class="gcell ' + s.cls + '" title="' + esc(s.label) + '">'
+          + esc(s.short) + "</span></td>";
+      });
+      h += "</tr>";
+    });
+    $("gridView").innerHTML = h + "</tbody></table></div>";
+  };
+
+  /* ---------- workload heatmap (sequential, one hue) ---------- */
+  var heatStep = function (v) {
+    var i = v <= 0 ? 0 : v === 1 ? 1 : v === 2 ? 2 : 3;
+    return "background:var(--h" + i + ");color:var(--h" + i + "-ink)";
+  };
+  var renderHeat = function () {
+    var h = '<table><caption class="sr">Workdays per staff member per month</caption><thead><tr>'
+      + '<th scope="col" class="sticky-col">Staff</th>'
+      + D.months.map(function (m) { return '<th scope="col" style="text-align:center">' + esc(m).replace(" ", "<br>") + "</th>"; }).join("")
+      + '<th scope="col" style="text-align:center">Total</th><th scope="col" style="text-align:center"><abbr title="Trainings missed">Missed</abbr></th>'
+      + "</tr></thead><tbody>";
+    D.summary.forEach(function (r) {
+      h += '<tr class="' + (r.name === state.me ? "me-row" : "") + '">'
+        + '<th scope="row" class="sticky-col" style="font-weight:700">' + esc(r.name) + "</th>";
+      D.months.forEach(function (m) {
+        var v = r.months[m] || 0;
+        h += '<td class="h"><span style="' + heatStep(v) + '" title="' + esc(r.name + " — " + m + ": " + v + " workday" + (v === 1 ? "" : "s")) + '">' + v + "</span></td>";
+      });
+      h += '<td class="tot"><b>' + r.total + "</b></td>"
+        + '<td class="tot"><span class="gcell ' + (r.trainingsMissed > 1 ? "st-stays" : "st-off") + '">' + r.trainingsMissed + "</span></td></tr>";
+    });
+    $("heat").innerHTML = h + "</tbody></table>";
+    $("heatLegend").innerHTML = "<span>Workdays in month</span>"
+      + [0, 1, 2, 3].map(function (v) {
+        return '<span class="sw"><i style="' + heatStep(v) + '"></i>' + v + (v === 3 ? "+" : "") + "</span>";
+      }).join("");
+    $("fairness").textContent = D.fairness;
+  };
+
+  /* ---------- day plan ---------- */
+  var renderDay = function () {
+    $("timeline").innerHTML = D.dayBlocks.map(function (b) {
+      if (!b.time) return '<div class="tl sub"><span class="tl-t"></span><span class="tl-a">' + esc(b.activity) + "</span></div>";
+      var isEnd = /^1:00$/.test(b.time);
+      return '<div class="tl' + (isEnd ? " pin" : "") + '"><span class="tl-t">' + esc(b.time) + '</span><span class="tl-a">' + esc(b.activity) + "</span></div>";
+    }).join("");
+
+    var dutyCard = function (d, title) {
+      return '<div class="duty"><h4>' + esc(title) + "</h4><ul>" + d.roles.map(function (r, i) {
+        var who = d.assigned[i];
+        return "<li><span>" + esc(r) + "</span>"
+          + '<span class="assigned ' + (who ? "a-yes" : "a-no") + '">' + esc(who || "Unassigned") + "</span></li>";
+      }).join("") + "</ul></div>";
+    };
+    $("duties").innerHTML =
+      dutyCard(D.duties.morning, "Morning duties — 4 staff")
+      + dutyCard(D.duties.dismissal, "Dismissal duties — 4 staff")
+      + '<p class="note"><b>Suggestion from the workbook:</b> ' + esc(D.duties.suggestion) + "</p>";
+  };
+
+  /* ---------- rules ---------- */
+  var renderRules = function () {
+    $("rulesGrid").innerHTML = D.rules.map(function (r) {
+      return '<div class="rule"><h4>' + esc(r.item) + "</h4><p>" + esc(r.rule) + "</p></div>";
+    }).join("");
+    $("practice").textContent = D.practice;
+  };
+
+  /* ---------- detail sheet ---------- */
+  var dlg = $("detail");
+  var openDetail = function (iso) {
+    var f = D.fridays.filter(function (x) { return x.date === iso; })[0];
+    if (!f) return;
+    var ty = typeOf(f.type);
+    $("dTitle").textContent = "Friday, " + fmtLong(f.d);
+    $("dSub").innerHTML = esc(ty.full) + " &middot; " + esc(relative(daysFrom(f.d)));
+    var b = "";
+    if (!isClosed(f)) {
+      b += '<dl class="rows" style="font-size:.938rem">'
+        + '<div class="row"><dt>Morning 7:30–11:30</dt><dd>' + peopleChips([f.morning1, f.morning2, f.morningExtra]) + "</dd></div>"
+        + '<div class="row"><dt>Students 11:30–1:00</dt><dd><b>' + esc(f.studentCoverage) + "</b></dd></div>"
+        + '<div class="row"><dt>Office</dt><dd>' + esc(f.officeCoverage) + (f.openOffice ? ' <span class="openflag">Open shift — admin to assign</span>' : "") + "</dd></div>"
+        + '<div class="row"><dt>Teacher training</dt><dd>' + esc(f.training) + "</dd></div>"
+        + "</dl>";
+    }
+    b += '<div><p class="eyebrow" style="margin-bottom:.45rem">Every staff member</p><div class="stafflist">'
+      + D.staff.map(function (n) {
+        var s = statusOf(f.status[n]);
+        return '<div class="sl ' + s.cls + '"><span class="who-n"><b>' + esc(n) + "</b></span><span>" + esc(s.short) + "</span></div>";
+      }).join("") + "</div></div>";
+    if (f.note) b += '<p class="note" style="margin-top:0">' + esc(f.note) + "</p>";
+    $("dBody").innerHTML = b;
+    if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
+  };
+  $("dClose").addEventListener("click", function () { dlg.close(); });
+  dlg.addEventListener("click", function (ev) { if (ev.target === dlg) dlg.close(); });
+  document.addEventListener("click", function (ev) {
+    var t = ev.target.closest("[data-open]");
+    if (t) openDetail(t.getAttribute("data-open"));
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "/" && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
+      ev.preventDefault();
+      $("q").focus();
+    }
+  });
+
+  /* ---------- calendar export ---------- */
+  var pad = function (n) { return String(n).padStart(2, "0"); };
+  var icsEsc = function (s) { return String(s).replace(/([\\,;])/g, "\\$1").replace(/\n/g, "\\n"); };
+  var enc = window.TextEncoder ? new TextEncoder() : null;
+  var octets = function (s) { return enc ? enc.encode(s).length : s.length; };
+  var fold = function (line) {
+    var out = [], cur = "", pre = "";
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (octets(pre + cur + ch) > 74) { out.push(pre + cur); pre = " "; cur = ch; }
+      else cur += ch;
+    }
+    out.push(pre + cur);
+    return out.join("\r\n");
+  };
+  var buildIcs = function () {
+    var me = state.me;
+    var stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    var L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Friday Rotation Board//EN", "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH", "X-WR-CALNAME:" + (me ? me + " — Friday rotation" : "Friday rotation 2026–2027")];
+    D.fridays.forEach(function (f) {
+      var ymd = f.date.replace(/-/g, "");
+      var title, desc, s, e;
+      if (me) {
+        var st = statusOf(f.status[me]);
+        if (!st.work) return;
+        title = st.cal || ("Friday — " + st.short);
+        s = st.s; e = st.e;
+        desc = st.label + "\n" + (f.studentCoverage ? "Students: " + f.studentCoverage + "\n" : "")
+          + (f.officeCoverage ? "Office: " + f.officeCoverage + "\n" : "") + (f.note || "");
+      } else {
+        if (isClosed(f)) return;
+        title = "Friday school — " + typeOf(f.type).short;
+        s = "0730"; e = "1330";
+        desc = "Morning: " + [f.morning1, f.morning2, f.morningExtra].filter(Boolean).join(", ")
+          + "\nStudents: " + f.studentCoverage + "\nOffice: " + f.officeCoverage
+          + (f.training && f.training !== "—" ? "\nTraining: " + f.training : "") + "\n" + (f.note || "");
+      }
+      L.push("BEGIN:VEVENT",
+        "UID:" + ymd + "-" + (me || "all").toLowerCase().replace(/\W/g, "") + "@friday-rotation",
+        "DTSTAMP:" + stamp,
+        "DTSTART:" + ymd + "T" + s + "00",
+        "DTEND:" + ymd + "T" + e + "00",
+        fold("SUMMARY:" + icsEsc(title)),
+        fold("DESCRIPTION:" + icsEsc(desc.trim())));
+      L.push("END:VEVENT");
+    });
+    L.push("END:VCALENDAR");
+    return L.join("\r\n");
+  };
+  // Framed viewers (the Claude artifact viewer among them) never grant a page
+  // permission to start a download, so hand the calendar over as text there.
+  var framed = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+  var sandboxed = framed || !!(window.claude && typeof window.claude.use === "function");
+  var openIcsBox = function () {
+    var d = $("icsBox");
+    if (typeof d.showModal === "function") d.showModal(); else d.setAttribute("open", "");
+  };
+  var makeIcs = function () {
+    var text = buildIcs();
+    var name = (state.me ? state.me.toLowerCase() + "-fridays" : "friday-rotation-2026-2027") + ".ics";
+    $("icsText").value = text;
+    $("icsDl").href = URL.createObjectURL(new Blob([text], { type: "text/calendar;charset=utf-8" }));
+    $("icsDl").download = name;
+    $("icsDl").hidden = sandboxed;
+    if (sandboxed) { openIcsBox(); return; }
+    var url = URL.createObjectURL(new Blob([text], { type: "text/calendar;charset=utf-8" }));
+    var a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    toast("Saved " + name + ".", "Didn't download?", openIcsBox);
+  };
+  $("icsClose").addEventListener("click", function () { $("icsBox").close(); });
+  $("icsBox").addEventListener("click", function (ev) { if (ev.target === $("icsBox")) $("icsBox").close(); });
+  $("icsCopy").addEventListener("click", function () {
+    var ta = $("icsText");
+    ta.select();
+    var done = false;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ta.value).then(function () { toast("Calendar text copied."); });
+      done = true;
+    }
+    if (!done) { try { document.execCommand("copy"); toast("Calendar text copied."); } catch (e) { toast("Select the text and copy it manually."); } }
+  });
+
+  /* ---------- controls ---------- */
+  var monthOpts = (function () {
+    var seen = {}, out = [];
+    D.fridays.forEach(function (f) { if (!seen[f.mk]) { seen[f.mk] = 1; out.push({ k: f.mk, n: monthName(f.d) }); } });
+    return out;
+  })();
+  $("fMonth").innerHTML = '<option value="">All months</option>'
+    + monthOpts.map(function (m) { return '<option value="' + m.k + '">' + esc(m.n) + "</option>"; }).join("");
+
+  $("q").addEventListener("input", function () { state.q = this.value; renderBoard(); });
+  $("fType").addEventListener("change", function () { state.type = this.value; renderBoard(); });
+  $("fMonth").addEventListener("change", function () { state.month = this.value; renderBoard(); });
+  $("onlyMine").addEventListener("change", function () { state.onlyMine = this.checked; renderBoard(); });
+  $("clearBtn").addEventListener("click", function () {
+    state.q = ""; state.type = ""; state.month = ""; state.onlyMine = false;
+    $("q").value = ""; $("fType").value = ""; $("fMonth").value = ""; $("onlyMine").checked = false;
+    renderBoard();
+  });
+  var setView = function (v) {
+    state.view = v;
+    try { localStorage.setItem("friday.view", v); } catch (e) {}
+    $("vCards").setAttribute("aria-pressed", v === "cards" ? "true" : "false");
+    $("vGrid").setAttribute("aria-pressed", v === "grid" ? "true" : "false");
+    $("cardsView").hidden = v !== "cards";
+    $("gridView").hidden = v !== "grid";
+    writeHash();
+    renderBoard();
+  };
+  $("vCards").addEventListener("click", function () { setView("cards"); });
+  $("vGrid").addEventListener("click", function () { setView("grid"); });
+  $("printBtn").addEventListener("click", function () { window.print(); });
+  $("jumpBtn").addEventListener("click", function () {
+    var el = document.querySelector('[data-open="' + nextFriday.date + '"]');
+    if (!el) {
+      state.q = ""; state.type = ""; state.month = ""; state.onlyMine = false;
+      $("q").value = ""; $("fType").value = ""; $("fMonth").value = ""; $("onlyMine").checked = false;
+      renderBoard();
+      el = document.querySelector('[data-open="' + nextFriday.date + '"]');
+    }
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.animate ? el.animate([{ boxShadow: "0 0 0 0 rgba(176,122,18,.75)" }, { boxShadow: "0 0 0 14px rgba(176,122,18,0)" }], { duration: 900 }) : null;
+    }
+  });
+
+  /* ---------- render ---------- */
+  var KEYS = ["full day 7:30-1:30", "morning coverage + training", "training 11:30-1:30",
+    "full-day coverage - misses training", "on campus (completed)", "off", "closed"];
+  var renderKey = function () {
+    $("statKey").innerHTML = '<span class="lead">Coverage bar</span>' + KEYS.map(function (k) {
+      var st = STATUS[k];
+      return '<span class="k ' + st.cls + (st.work ? "" : " dim") + '" style="background:none"><i></i>' + esc(st.short) + "</span>";
+    }).join("") + '<span style="margin-left:auto">Staff order: ' + esc(D.staff.join(" · ")) + "</span>";
+  };
+
+  var renderBoard = function () {
+    var rows = visible();
+    renderKey();
+    $("statKey").hidden = state.view !== "cards";
+    if (state.view === "cards") renderCards(rows); else renderGrid(rows);
+    $("empty").hidden = rows.length > 0;
+    $("cardsView").hidden = state.view !== "cards" || rows.length === 0;
+    $("gridView").hidden = state.view !== "grid" || rows.length === 0;
+    var workdays = state.me ? rows.filter(function (f) { return statusOf(f.status[state.me]).work; }).length : 0;
+    $("count").textContent = rows.length + " of " + D.fridays.length + " Fridays"
+      + (state.me ? " · " + workdays + " on duty" : "");
+  };
+  var renderAll = function () {
+    renderWho();
+    $("mineWrap").hidden = !state.me;
+    $("whoLabel").textContent = state.me ? "Viewing as" : "I am";
+    renderSpot();
+    renderTiles();
+    syncRequestStaff();
+    renderHeat();
+    renderBoard();
+    writeHash();
+  };
+
+  $("mastSub").textContent = D.subtitle.replace(/\s*\|\s*/g, " · ");
+  $("stamp").textContent = "Today: " + (today.getDay() === 5 ? "Friday, " : "") + fmtLong(today);
+  renderRequestForm();
+  renderDay();
+  renderRules();
+  setView(state.view);
+  renderAll();
+})();
+</script>
+</body>
+</html>
