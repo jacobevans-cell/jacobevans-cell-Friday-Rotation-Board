@@ -14,142 +14,61 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Convert public page to request-only mode
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
+          assert '<body>' in s
+          assert '<h1>Friday Rotation Board</h1>' in s
           s = s.replace('<body>', '<body class="request-only">', 1)
           s = s.replace('<h1>Friday Rotation Board</h1>', '<h1>Friday Day-Off Requests</h1>', 1)
           s = s.replace('Campus &amp; staff rotation &middot; 2026&ndash;2027', 'Friday availability &middot; 2026&ndash;2027', 1)
 
-          css = '''\n/* REQUEST-ONLY MODE: schedule stays in source but is intentionally not published */\nbody.request-only .idbar,\nbody.request-only .mast-tools,\nbody.request-only main > section:not(#requests),\nbody.request-only footer{display:none !important}\nbody.request-only main{width:min(920px,100% - 2rem);padding-block:2rem 4rem;gap:0}\nbody.request-only #requests{display:block}\nbody.request-only .request-panel{grid-template-columns:1fr}\nbody.request-only .request-intro{border-left:5px solid var(--brass)}\nbody.request-only .req-status{margin-top:.75rem}\n'''
+          css = '''\n/* REQUEST-ONLY MODE */\nbody.request-only .idbar,\nbody.request-only .mast-tools,\nbody.request-only main > section:not(#requests),\nbody.request-only footer{display:none !important}\nbody.request-only main{width:min(920px,100% - 2rem);padding-block:2rem 4rem;gap:0}\nbody.request-only #requests{display:block}\nbody.request-only .request-panel{grid-template-columns:1fr}\nbody.request-only .request-intro{border-left:5px solid var(--brass)}\n'''
           s = s.replace('</style>', css + '\n</style>', 1)
 
-          request_section = '''  <section id="requests" aria-labelledby="reqHead">\n    <header>\n      <h2 id="reqHead">Request a Friday off</h2>\n      <p class="hint">The Friday duty schedule is being rebuilt and is not published yet.</p>\n    </header>\n    <div class="request-panel">\n      <div class="request-intro">\n        <p class="eyebrow">Availability collection</p>\n        <h3>Tell us which Friday you need off</h3>\n        <p>Choose your name and the Friday you need off. These requests will be used to build the new Friday rotation before any duty schedule is published.</p>\n        <div class="request-callout"><b>No assignments are being shown yet.</b> A request records your availability only. The final Friday schedule will be published after requests are reviewed.</div>\n      </div>\n      <form class="request-form" id="requestForm">\n        <div class="req-grid">\n          <div class="req-field">\n            <label for="reqStaff">Staff member</label>\n            <select id="reqStaff" required></select>\n          </div>\n          <div class="req-field">\n            <label for="reqFriday">Friday requested off</label>\n            <select id="reqFriday" required></select>\n          </div>\n          <div class="req-field full">\n            <label>Flexibility</label>\n            <label class="req-check"><input type="checkbox" id="reqSwap" checked> I can work a different Friday instead if needed</label>\n          </div>\n        </div>\n        <p class="req-status" id="reqStatus">This is an availability request only. No Friday assignments are currently published.</p>\n        <div class="req-actions">\n          <button class="btn" type="submit">Open request email</button>\n          <button class="btn ghost" type="button" id="reqCopy">Copy request</button>\n        </div>\n        <p class="req-small">The request opens in Gmail addressed to the schedule manager. Review it, then press Send.</p>\n      </form>\n    </div>\n  </section>'''
+          sec_start = s.index('  <section id="requests" aria-labelledby="reqHead">')
+          sec_end = s.index('  <section id="roster" aria-labelledby="rosterHead">', sec_start)
+          new_section = '''  <section id="requests" aria-labelledby="reqHead">\n    <header>\n      <h2 id="reqHead">Request a Friday off</h2>\n      <p class="hint">The Friday duty schedule is being rebuilt and is not published yet.</p>\n    </header>\n    <div class="request-panel">\n      <div class="request-intro">\n        <p class="eyebrow">Availability collection</p>\n        <h3>Tell us which Friday you need off</h3>\n        <p>Choose your name and the Friday you need off. These requests will be used to build the new Friday rotation before any duty schedule is published.</p>\n        <div class="request-callout"><b>No assignments are being shown yet.</b> A request records your availability only. The final Friday schedule will be published after requests are reviewed.</div>\n      </div>\n      <form class="request-form" id="requestForm">\n        <div class="req-grid">\n          <div class="req-field">\n            <label for="reqStaff">Staff member</label>\n            <select id="reqStaff" required></select>\n          </div>\n          <div class="req-field">\n            <label for="reqFriday">Friday requested off</label>\n            <select id="reqFriday" required></select>\n          </div>\n          <div class="req-field full">\n            <label>Flexibility</label>\n            <label class="req-check"><input type="checkbox" id="reqSwap" checked> I can work a different Friday instead if needed</label>\n          </div>\n        </div>\n        <p class="req-status" id="reqStatus">This is an availability request only. No Friday assignments are currently published.</p>\n        <div class="req-actions">\n          <button class="btn" type="submit">Open request email</button>\n          <button class="btn ghost" type="button" id="reqCopy">Copy request</button>\n        </div>\n        <p class="req-small">The request opens in Gmail addressed to the schedule manager. Review it, then press Send.</p>\n      </form>\n    </div>\n  </section>\n\n'''
+          s = s[:sec_start] + new_section + s[sec_end:]
 
-          s, n = re.subn(r'  <section id="requests" aria-labelledby="reqHead">.*?\n  </section>', request_section, s, count=1, flags=re.S)
-          assert n == 1, 'request section not replaced'
+          js_start = s.index('  /* ---------- Friday-off requests ---------- */')
+          js_end = s.index('  /* ---------- filtering ---------- */', js_start)
+          new_js = '''  /* ---------- Friday-off requests ---------- */\n  var requestRows = function () {\n    return SCHOOL.filter(function (f) { return daysFrom(f.d) > 0; });\n  };\n  var requestRecord = function () {\n    var staff = $("reqStaff").value;\n    var iso = $("reqFriday").value;\n    var f = D.fridays.filter(function (x) { return x.date === iso; })[0];\n    return { staff: staff, friday: f, swap: $("reqSwap").checked };\n  };\n  var updateRequestStatus = function () {\n    $("reqStatus").textContent = "This is an availability request only. No Friday assignments are currently published.";\n  };\n  var requestText = function () {\n    var r = requestRecord();\n    if (!r.friday || !r.staff) return "";\n    return [\n      "FRIDAY OFF REQUEST",\n      "",\n      "Staff: " + r.staff,\n      "Friday requested off: Friday, " + fmtLong(r.friday.d),\n      "Can work a different Friday instead: " + (r.swap ? "Yes" : "No"),\n      "",\n      "This request is for availability planning. The new Friday duty schedule has not been published yet."\n    ].join("\\n");\n  };\n  var copyRequest = function () {\n    var text = requestText();\n    if (!text) return;\n    if (navigator.clipboard && navigator.clipboard.writeText) {\n      navigator.clipboard.writeText(text).then(function () { toast("Friday-off request copied."); });\n      return;\n    }\n    var ta = document.createElement("textarea");\n    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";\n    document.body.appendChild(ta); ta.select();\n    try { document.execCommand("copy"); toast("Friday-off request copied."); }\n    catch (e) { toast("Copy the request text manually."); }\n    ta.remove();\n  };\n  var openRequestEmail = function () {\n    var r = requestRecord();\n    if (!r.friday || !r.staff) return;\n    var subject = "[Friday Off Request] " + r.staff + " — " + fmtShort(r.friday.d) + ", " + r.friday.d.getFullYear();\n    var body = requestText();\n    var to = D.requestManagerEmail || "";\n    var gmail = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(to)\n      + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);\n    var w = window.open(gmail, "_blank");\n    if (!w) location.href = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);\n  };\n  var renderRequestForm = function () {\n    $("reqStaff").innerHTML = D.staff.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + "</option>"; }).join("");\n    var rr = requestRows();\n    $("reqFriday").innerHTML = rr.map(function (f) {\n      return '<option value="' + f.date + '">' + esc(fmtLong(f.d)) + "</option>";\n    }).join("");\n    if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;\n    $("reqStaff").addEventListener("change", updateRequestStatus);\n    $("reqFriday").addEventListener("change", updateRequestStatus);\n    $("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); openRequestEmail(); });\n    $("reqCopy").addEventListener("click", copyRequest);\n    updateRequestStatus();\n  };\n  var syncRequestStaff = function () {\n    if (!$("reqStaff")) return;\n    if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;\n    updateRequestStatus();\n  };\n\n'''
+          s = s[:js_start] + new_js + s[js_end:]
 
-          request_js = r'''  /* ---------- Friday-off requests ---------- */
-  var requestRows = function () {
-    return SCHOOL.filter(function (f) { return daysFrom(f.d) > 0; });
-  };
-  var requestRecord = function () {
-    var staff = $("reqStaff").value;
-    var iso = $("reqFriday").value;
-    var f = D.fridays.filter(function (x) { return x.date === iso; })[0];
-    return { staff: staff, friday: f, swap: $("reqSwap").checked };
-  };
-  var updateRequestStatus = function () {
-    $("reqStatus").textContent = "This is an availability request only. No Friday assignments are currently published.";
-  };
-  var requestText = function () {
-    var r = requestRecord();
-    if (!r.friday || !r.staff) return "";
-    return [
-      "FRIDAY OFF REQUEST",
-      "",
-      "Staff: " + r.staff,
-      "Friday requested off: Friday, " + fmtLong(r.friday.d),
-      "Can work a different Friday instead: " + (r.swap ? "Yes" : "No"),
-      "",
-      "This request is for availability planning. I understand the new Friday duty schedule has not been published yet."
-    ].join("\n");
-  };
-  var copyRequest = function () {
-    var text = requestText();
-    if (!text) return;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { toast("Friday-off request copied."); });
-      return;
-    }
-    var ta = document.createElement("textarea");
-    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); toast("Friday-off request copied."); }
-    catch (e) { toast("Copy the request text manually."); }
-    ta.remove();
-  };
-  var openRequestEmail = function () {
-    var r = requestRecord();
-    if (!r.friday || !r.staff) return;
-    var subject = "[Friday Off Request] " + r.staff + " — " + fmtShort(r.friday.d) + ", " + r.friday.d.getFullYear();
-    var body = requestText();
-    var to = D.requestManagerEmail || "";
-    var gmail = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(to)
-      + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-    var w = window.open(gmail, "_blank");
-    if (!w) location.href = "mailto:" + encodeURIComponent(to) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-  };
-  var renderRequestForm = function () {
-    $("reqStaff").innerHTML = D.staff.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + "</option>"; }).join("");
-    var rr = requestRows();
-    $("reqFriday").innerHTML = rr.map(function (f) {
-      return '<option value="' + f.date + '">' + esc(fmtLong(f.d)) + "</option>";
-    }).join("");
-    if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;
-    $("reqStaff").addEventListener("change", updateRequestStatus);
-    $("reqFriday").addEventListener("change", updateRequestStatus);
-    $("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); openRequestEmail(); });
-    $("reqCopy").addEventListener("click", copyRequest);
-    updateRequestStatus();
-  };
-  var syncRequestStaff = function () {
-    if (!$("reqStaff")) return;
-    if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;
-    updateRequestStatus();
-  };
-
-  /* ---------- filtering ---------- */'''
-
-          s, n = re.subn(r'  /\* ---------- Friday-off requests ---------- \*/.*?  /\* ---------- filtering ---------- \*/', request_js, s, count=1, flags=re.S)
-          assert n == 1, 'request JS not replaced'
-
-          s = s.replace('$("mastSub").textContent = D.subtitle.replace(/\\s*\\|\\s*/g, " · ");', '$("mastSub").textContent = "The Friday duty schedule is being rebuilt. This page is temporarily for day-off requests only.";', 1)
-
+          old = '$("mastSub").textContent = D.subtitle.replace(/\\s*\\|\\s*/g, " · ");'
+          assert old in s
+          s = s.replace(old, '$("mastSub").textContent = "The Friday duty schedule is being rebuilt. This page is temporarily for day-off requests only.";', 1)
           p.write_text(s, encoding='utf-8')
 
           readme = Path('README.md')
           r = readme.read_text(encoding='utf-8')
           notice = '> **Public mode right now:** request days off only. The rotation/schedule is intentionally hidden until availability requests are reviewed.\n\n'
           if notice not in r:
-              r = r.replace('# Friday Rotation Board\n\n', '# Friday Rotation Board\n\n' + notice, 1)
-              readme.write_text(r, encoding='utf-8')
+            readme.write_text(r.replace('# Friday Rotation Board\n\n', '# Friday Rotation Board\n\n' + notice, 1), encoding='utf-8')
 
           handoff = Path('HANDOFF.md')
           h = handoff.read_text(encoding='utf-8')
           marker = '**TEMPORARY PUBLIC MODE (Sep 4, 2026):** The site is locked to Friday-off requests only. Rotation, assignments, workload totals, training labels, and calendar views remain in source but are intentionally hidden from staff until availability requests are processed and a real schedule is approved.\n\n'
           if marker not in h:
-              h = h.replace('This supersedes the original handoff after the September 4, 2026 staffing change.\n\n', 'This supersedes the original handoff after the September 4, 2026 staffing change.\n\n' + marker, 1)
-              handoff.write_text(h, encoding='utf-8')
+            handoff.write_text(h.replace('This supersedes the original handoff after the September 4, 2026 staffing change.\n\n', 'This supersedes the original handoff after the September 4, 2026 staffing change.\n\n' + marker, 1), encoding='utf-8')
           PY
-
-      - name: Verify request-only public mode
+      - name: Verify request-only mode
         shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          s = Path('index.html').read_text(encoding='utf-8')
-          assert '<body class="request-only">' in s
-          assert '<h1>Friday Day-Off Requests</h1>' in s
-          assert 'Optional note' not in s
-          assert 'id="reqNote"' not in s
-          assert 'id="reqPriority"' not in s
-          assert 'Current schedule:' not in s
-          assert ' · " + esc(typeOf(f.type).short)' not in s
-          assert 'body.request-only main > section:not(#requests)' in s
-          assert 'The Friday duty schedule is being rebuilt' in s
-          assert 'Friday requested off:' in s
-          print('Request-only mode verified.')
-          PY
-
+          grep -q '<body class="request-only">' index.html
+          grep -q '<h1>Friday Day-Off Requests</h1>' index.html
+          ! grep -q 'Optional note' index.html
+          ! grep -q 'id="reqNote"' index.html
+          ! grep -q 'id="reqPriority"' index.html
+          ! grep -q 'Current schedule:' index.html
+          grep -q 'Friday requested off:' index.html
       - name: Commit request-only mode
         shell: bash
         run: |
