@@ -10,6 +10,7 @@ Standalone 2026–2027 Friday campus and staff rotation system for Explore Acade
 - Evans
 - Latoya
 - Meda
+- Abby
 
 Dorr and McKinley are no longer assigned future Friday duty. Their August assignments remain in the board only as historical records.
 
@@ -23,6 +24,6 @@ Dorr and McKinley are no longer assigned future Friday duty. Their August assign
 - Friday availability / day-off request workflow
 - Full Friday-day schedule and duty information
 
-The current rotation is balanced at **22 Friday workdays per active staff member** and **2 missed trainings per active staff member**.
+The rotation is being rebuilt for five active staff after availability is collected. Abby is now part of the regular Friday scheduling pool.
 
 `index.html` is the complete application. `HANDOFF.md` contains the project and implementation details.
