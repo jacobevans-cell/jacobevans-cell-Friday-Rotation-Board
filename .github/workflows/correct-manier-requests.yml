@@ -1,0 +1,42 @@
+name: Correct Manier Friday Requests
+on:
+  push:
+    paths:
+      - 'scripts/manier_request_fix.txt'
+permissions:
+  contents: read
+jobs:
+  correct:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+      - name: Authenticate
+        run: |
+          set -euo pipefail
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "::add-mask::$ACCESS_TOKEN"
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
+      - name: Correct request records
+        env:
+          PROJECT_ID: friday-rotation-board
+        run: |
+          set -euo pipefail
+          base="https://firestore.googleapis.com/v1/projects/$PROJECT_ID/databases/(default)/documents/fridayOffRequests"
+          now=$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)
+          for date in 2026-09-04 2026-10-02 2026-11-06 2027-01-15 2027-02-12; do
+            curl -fsS -X DELETE -H "Authorization: Bearer $ACCESS_TOKEN" "$base/meda__${date}" >/dev/null || true
+          done
+          for date in 2026-09-04 2026-10-02 2026-11-06 2027-01-15 2027-02-12 2027-04-30; do
+            body=$(jq -n --arg date "$date" --arg now "$now" '{fields:{staffName:{stringValue:"Manier"},staffKey:{stringValue:"manier"},fridayDate:{stringValue:$date},canSwap:{booleanValue:true},submittedAt:{timestampValue:$now}}}')
+            curl -fsS -X PATCH -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" -d "$body" "$base/manier__${date}" >/dev/null
+          done
+          echo 'CORRECTED REQUESTS'
+          curl -fsS -H "Authorization: Bearer $ACCESS_TOKEN" "$base?pageSize=100" | jq -r '.documents[]? | [.fields.staffName.stringValue,.fields.fridayDate.stringValue] | @tsv' | sort -k2,2 -k1,1
