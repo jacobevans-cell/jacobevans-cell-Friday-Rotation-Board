@@ -4,13 +4,9 @@ Updated September 4, 2026.
 
 ## Current purpose
 
-The public site is intentionally in **request-only mode**. Staff should only see the Friday day-off request form until availability has been collected and a real rotation is generated.
+The planned day-off collection phase is complete and the **live Friday schedule is now published**.
 
-A submitted request is automatically approved and means:
-
-> Do not schedule that staff member on that Friday.
-
-There is no pending / approval / denial state.
+The public site shows the working Friday rotation. The old planned-day-off request form is hidden. Future unplanned absences are intended to be handled as **sick days** in the next update.
 
 ## Repository
 
@@ -24,6 +20,24 @@ Firebase rules: `firestore.rules`
 
 Firebase config: `firebase.json` + `.firebaserc`
 
+## Founding source and invariants
+
+The original Friday system was extracted from `Friday_School_Schedule_2026-2027.xlsm` and documented in the original Sports-Calendar handoff. The current live schedule must continue to preserve these founding requirements unless the user explicitly changes them:
+
+- 42 Fridays total
+- 26 regular Fridays
+- 8 training Fridays
+- 2 completed Fridays
+- 6 no-school Fridays
+- minimum two assigned teachers for student coverage
+- training Friday structure with two morning-coverage teachers, one staying with Cortni through dismissal, and the other joining training at 11:30
+- exactly one teacher missing each training because they stay with students
+- the 11:30–1:30 office assignment remains OPEN on the 8 training Fridays for administration to assign
+- office hours remain 7:30 a.m.–1:30 p.m.; student dismissal is 1:00 p.m.
+- no future assignment for Dorr or McKinley
+
+The current published schedule passed automated checks for all inventory counts, training structure, open-office count, and collected hard unavailability constraints before publication.
+
 ## Locked Friday staffing model
 
 Active Friday pool:
@@ -34,24 +48,22 @@ Active Friday pool:
 - Abby
 - Manier
 
-`Manier` is the display name used for Latoya Manier in this system. This is a naming change, not a removal from the rotation.
-
-Dorr and McKinley must not receive future Friday assignments. Historical records may still contain former staff and should not be rewritten merely for appearance.
+`Manier` is the display name used for Latoya Manier in this system.
 
 ### Standing Friday support
 
-Meda is treated as a standing Friday presence / campus support person. The regular rotating coverage pool is primarily:
+Meda is treated as standing Friday campus support when available.
+
+The two-person regular rotating coverage pool is:
 
 - Abby
 - Manier
 - Evans
 - Lingam
 
-Meda may still submit a Friday-off request; any such request is a hard unavailability constraint.
+The live future regular workload is balanced at 13 / 13 / 12 / 12 assignments across those four rotating teachers.
 
 ### Fixed Teacher Clarity training Fridays
-
-The following dates are locked as Teacher Clarity training Fridays based on the September 4 staffing chat:
 
 - September 18, 2026
 - October 23, 2026
@@ -61,117 +73,79 @@ The following dates are locked as Teacher Clarity training Fridays based on the 
 - March 26, 2027
 - April 23, 2027
 
-Training Fridays must be scheduled separately from normal Friday rotation logic. The staffing chat specifically indicates short-staffing may require only Meda and Lingam to attend some trainings while remaining staff cover students. Do not assume that pattern automatically; treat it as a scheduling option when solving the final calendar.
+Training Fridays remain a separate staffing problem from regular Fridays.
 
 ## Firebase architecture
 
-The Friday system is standalone and uses Firebase project:
+Standalone Firebase project:
 
 `friday-rotation-board`
 
-It does **not** use Dragonswood Firebase.
+Current system:
 
-The system uses:
-
-- public no-login staff submission
-- Cloud Firestore
-- collection: `fridayOffRequests`
-- Google sign-in only for the protected admin page
-- no Cloud Functions
-
-## Request document model
-
-One deterministic document per staff/date:
-
-`{staffKey}__{YYYY-MM-DD}`
-
-Example:
-
-`evans__2026-09-11`
-
-Current stored fields:
-
-```text
-staffName
-staffKey
-fridayDate
-canSwap
-submittedAt
-```
-
-`canSwap` is retained internally for compatibility but is no longer exposed as a staff choice. Operationally every request simply means the person is unavailable that Friday.
-
-Submitting the same staff/date again overwrites the same record rather than creating a duplicate.
-
-## Security model
-
-Firestore rules are the authority.
-
-Public staff submission:
-
-- no sign-in required
-- staff name/key must be one of the five active staff
-- document ID must match staff/date
-- request data is not publicly readable
+- Cloud Firestore collection `fridayOffRequests`
+- public staff submissions require no sign-in when that form is enabled
+- admin page uses Google sign-in
+- no dependency on Dragonswood Firebase
+- no Cloud Functions currently required for the live static schedule
 
 Admin read/delete access is restricted to:
 
 - `jacob.evans@explore.academy`
 - `jacobicusjax@gmail.com`
 
-## Public request behavior
-
-Staff choose only:
-
-1. staff member
-2. Friday requested off
-
-On submit:
-
-1. Firestore saves the request.
-2. The status box changes to green with `Request saved ✓` and the selected Friday.
-
-There is no flexibility checkbox and no staff sign-in.
-
 ## Admin page
 
-`admin.html` reads Firestore directly after admin Google sign-in.
+`admin.html` now supports:
 
-It shows:
+- Google admin sign-in
+- viewing all recorded day-off requests
+- conflict counts
+- adding a request manually
+- editing a request
+- removing a request
+- refreshing records
+- signing out
 
-- total requests
-- number of Fridays affected
-- individual staff/date requests
-- how many active staff remain available on each affected Friday
-- coverage conflict warnings when fewer than two active staff remain available
-- remove-request control
+## Live schedule generation rules
 
-## Schedule generation rules
+When the schedule is rebuilt, use Firestore records as hard unavailability constraints and preserve the founding invariants above.
 
-The old embedded draft schedule is not final truth. A new schedule will be generated after day-off requests are collected.
+Priority order:
 
-When generating the new schedule, treat Firestore request records as hard unavailability constraints.
+1. Never schedule someone on a recorded unavailable date.
+2. Maintain minimum student coverage.
+3. Preserve valid training-Friday structure.
+4. Preserve the 8 open training-day office shifts unless administration explicitly changes that rule.
+5. Treat Meda as standing Friday support when available.
+6. Build regular rotating coverage across Abby, Manier, Evans, and Lingam.
+7. Keep rotating workload as even as possible.
+8. Never assign Dorr or McKinley on future dates.
+9. Flag impossible dates instead of inventing invalid coverage.
 
-Priorities:
+## NEXT LOCKED UPDATE — Sick-day auto-rebalance + teacher email
 
-1. Never schedule someone on a requested-off Friday.
-2. Use the locked active staff pool: Lingam, Evans, Meda, Abby, Manier.
-3. Treat Meda as standing Friday support unless she has requested that Friday off.
-4. Build regular rotating coverage primarily across Abby, Manier, Evans, and Lingam.
-5. Never assign Dorr or McKinley on future dates.
-6. Preserve the seven locked Teacher Clarity training dates.
-7. Maintain required student coverage.
-8. Handle training Fridays separately from regular Fridays.
-9. Balance regular rotating workload as evenly as possible after hard constraints.
-10. Flag impossible dates instead of inventing invalid coverage.
+This is the next planned feature after the live schedule.
 
-Nothing should become publicly visible as a schedule until the generated rotation is reviewed and deliberately published.
+Once planned day-off collection is closed, any newly entered absence should be treated as a **sick day**.
+
+Required future behavior:
+
+1. Admin/staff records a sick day for a Friday.
+2. The system compares that absence against the currently published assignment.
+3. If the absent person is scheduled, the scheduler automatically computes the smallest valid re-balance that preserves all founding coverage/training constraints.
+4. The system must not silently create one-person coverage or invalid training coverage.
+5. The updated schedule is saved as the new live schedule.
+6. A clear audit trail records what changed and why.
+7. Teachers affected by the change receive an automatic email showing the changed Friday assignment.
+8. If no valid automatic replacement exists, the system flags the date for admin action rather than fabricating coverage.
+
+This later update will likely require a server-side Firebase trigger/function plus an authenticated email-sending path. Do not implement the email workflow by exposing credentials in browser code.
 
 ## Important implementation details to preserve
 
-- Dates are parsed as local dates using `new Date(y, m-1, d)` rather than `new Date('YYYY-MM-DD')`.
-- Request-only mode hides the old draft roster, workload, training labels, and calendar views.
-- Light/dark mode remains available on the public request page.
-- The theme choice is saved locally on each device.
-- Request data itself is never stored in localStorage.
-- Old draft schedule data may remain embedded for later regeneration, but it must not be treated as current published truth.
+- Parse dates locally with `new Date(y, m-1, d)`, not `new Date('YYYY-MM-DD')`.
+- Light/dark mode remains available.
+- Calendar export must stay consistent with the live status data.
+- Request/absence data itself is never stored only in localStorage.
+- Any future automatic schedule adjustment must rerun the founding invariant checks before publication.
