@@ -439,7 +439,7 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
         <p class="eyebrow">Availability collection</p>
         <h3>Tell us which Friday you need off</h3>
         <p>Choose your name and the Friday you need off. These requests will be used to build the new Friday rotation before any duty schedule is published.</p>
-        <div class="request-callout"><b>No assignments are being shown yet.</b> A request records your availability only. The final Friday schedule will be published after requests are reviewed.</div>
+        <div class="request-callout"><b>No assignments are being shown yet.</b> A request records your availability only. Every submitted request is treated as an approved day off and will be used when the new rotation is generated.</div>
       </div>
       <form class="request-form" id="requestForm">
         <div class="req-grid">
@@ -456,7 +456,7 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
             <label class="req-check"><input type="checkbox" id="reqSwap" checked> I can work a different Friday instead if needed</label>
           </div>
         </div>
-        <p class="req-status" id="reqStatus">This is an availability request only. No Friday assignments are currently published.</p>
+        <p class="req-status" id="reqStatus">Submitting this request means you will not be scheduled on that Friday.</p>
         <div class="req-actions">
           <button class="btn" type="submit" id="submitRequest">Submit request</button>
         </div>
@@ -838,7 +838,7 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
     if (kind === "error") box.classList.add("req-error");
   };
   var updateRequestStatus = function () {
-    setRequestMessage("This is an availability request only. No Friday assignments are currently published.", "");
+    setRequestMessage("Submitting this request means you will not be scheduled on that Friday.", "");
   };
   var ensureRequestUser = async function () {
     var user = requestAuth.currentUser;
