@@ -1,9 +1,7 @@
-name: Add light dark mode toggle
+name: Theme Toggle Patch
 
-on:
+"on":
   push:
-    paths:
-      - '.github/workflows/add-theme-toggle.yml'
 
 permissions:
   contents: write
@@ -13,80 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Add request-page theme toggle
+      - name: Patch the page
+        run: python3 scripts/theme_patch.py
+      - name: Commit if changed
         shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-
-          # Request-only mode currently hides every masthead tool. Keep the tool
-          # row visible, then hide only Jump and Print so the theme toggle remains.
-          target = 'body.request-only .mast-tools,\n'
-          assert target in s, 'mast-tools hide rule not found'
-          s = s.replace(target, '', 1)
-
-          marker = 'body.request-only footer{display:none !important}\n'
-          inject = (
-              'body.request-only footer{display:none !important}\n'
-              'body.request-only .mast-tools{display:flex !important}\n'
-              'body.request-only #jumpBtn,\n'
-              'body.request-only #printBtn{display:none !important}\n'
-          )
-          assert marker in s, 'request-only footer marker not found'
-          s = s.replace(marker, inject, 1)
-
-          start_marker = '  /* ---------- theme ---------- */'
-          end_marker = '  /* ---------- toast ---------- */'
-          start = s.index(start_marker)
-          end = s.index(end_marker, start)
-          new_theme = '''  /* ---------- theme ---------- */
-  var theme = "light";
-  try {
-    var savedTheme = localStorage.getItem("friday.theme");
-    if (savedTheme === "light" || savedTheme === "dark") theme = savedTheme;
-    else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
-  } catch (e) {}
-  var applyTheme = function () {
-    document.documentElement.setAttribute("data-theme", theme);
-    var nextIsDark = theme === "light";
-    $("themeIcon").textContent = nextIsDark ? "☽" : "☀";
-    $("themeLabel").textContent = nextIsDark ? "Dark mode" : "Light mode";
-    $("themeBtn").setAttribute("aria-label", nextIsDark ? "Switch to dark mode" : "Switch to light mode");
-  };
-  $("themeBtn").addEventListener("click", function () {
-    theme = theme === "light" ? "dark" : "light";
-    try { localStorage.setItem("friday.theme", theme); } catch (e) {}
-    applyTheme();
-  });
-  applyTheme();
-
-'''
-          s = s[:start] + new_theme + s[end:]
-          p.write_text(s, encoding='utf-8')
-          PY
-
-      - name: Verify theme toggle
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          s = Path('index.html').read_text(encoding='utf-8')
-          assert 'body.request-only .mast-tools{display:flex !important}' in s
-          assert 'body.request-only #jumpBtn' in s
-          assert 'body.request-only #printBtn{display:none !important}' in s
-          assert 'Dark mode' in s and 'Light mode' in s
-          assert 'var themes = ["auto", "light", "dark"]' not in s
-          assert 'localStorage.setItem("friday.theme", theme)' in s
-          print('Light/dark mode toggle verified.')
-          PY
-
-      - name: Commit theme toggle
-        shell: bash
-        run: |
+          if git diff --quiet -- index.html; then
+            echo "Theme toggle already present."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
