@@ -1,0 +1,116 @@
+name: Add light dark mode toggle
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-theme-toggle.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add request-page theme toggle
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old_css = '''body.request-only .idbar,
+body.request-only .mast-tools,
+body.request-only main > section:not(#requests),
+body.request-only footer{display:none !important}
+body.request-only main{width:min(920px,100% - 2rem);padding-block:2rem 4rem;gap:0}
+body.request-only #requests{display:block}
+body.request-only .request-panel{grid-template-columns:1fr}
+body.request-only .request-intro{border-left:5px solid var(--brass)}'''
+
+          new_css = '''body.request-only .idbar,
+body.request-only main > section:not(#requests),
+body.request-only footer{display:none !important}
+body.request-only .mast-tools{display:flex !important}
+body.request-only #jumpBtn,
+body.request-only #printBtn{display:none !important}
+body.request-only main{width:min(920px,100% - 2rem);padding-block:2rem 4rem;gap:0}
+body.request-only #requests{display:block}
+body.request-only .request-panel{grid-template-columns:1fr}
+body.request-only .request-intro{border-left:5px solid var(--brass)}'''
+
+          assert old_css in s, 'request-only CSS block not found'
+          s = s.replace(old_css, new_css, 1)
+
+          old_js = '''  /* ---------- theme ---------- */
+  var themes = ["auto", "light", "dark"];
+  var icons = { auto: "◐", light: "☀", dark: "☽" };
+  var theme = "auto";
+  try { theme = localStorage.getItem("friday.theme") || "auto"; } catch (e) {}
+  var applyTheme = function () {
+    if (theme === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", theme);
+    $("themeIcon").textContent = icons[theme];
+    $("themeLabel").textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+  };
+  $("themeBtn").addEventListener("click", function () {
+    theme = themes[(themes.indexOf(theme) + 1) % 3];
+    try { localStorage.setItem("friday.theme", theme); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();'''
+
+          new_js = '''  /* ---------- theme ---------- */
+  var theme = "light";
+  try {
+    var savedTheme = localStorage.getItem("friday.theme");
+    if (savedTheme === "light" || savedTheme === "dark") theme = savedTheme;
+    else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
+  } catch (e) {}
+  var applyTheme = function () {
+    document.documentElement.setAttribute("data-theme", theme);
+    var nextIsDark = theme === "light";
+    $("themeIcon").textContent = nextIsDark ? "☽" : "☀";
+    $("themeLabel").textContent = nextIsDark ? "Dark mode" : "Light mode";
+    $("themeBtn").setAttribute("aria-label", nextIsDark ? "Switch to dark mode" : "Switch to light mode");
+  };
+  $("themeBtn").addEventListener("click", function () {
+    theme = theme === "light" ? "dark" : "light";
+    try { localStorage.setItem("friday.theme", theme); } catch (e) {}
+    applyTheme();
+  });
+  applyTheme();'''
+
+          assert old_js in s, 'theme JS block not found'
+          s = s.replace(old_js, new_js, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Verify theme toggle
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('index.html').read_text(encoding='utf-8')
+          assert 'body.request-only .mast-tools{display:flex !important}' in s
+          assert 'body.request-only #jumpBtn' in s
+          assert 'body.request-only #printBtn' in s
+          assert 'Dark mode' in s
+          assert 'Light mode' in s
+          assert 'var themes = ["auto", "light", "dark"]' not in s
+          assert 'localStorage.setItem("friday.theme", theme)' in s
+          print('Light/dark mode toggle verified.')
+          PY
+
+      - name: Commit theme toggle
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add light dark mode toggle"
+          git push
