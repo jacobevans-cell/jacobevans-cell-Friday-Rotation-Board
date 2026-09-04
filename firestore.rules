@@ -1,4 +1,4 @@
-// Anonymous staff request flow v6
+// Anonymous staff request flow v7
 rules_version = '2';
 
 service cloud.firestore {
@@ -23,9 +23,9 @@ service cloud.firestore {
     function validStaffPair(data) {
       return (data.staffName == 'Lingam' && data.staffKey == 'lingam')
         || (data.staffName == 'Evans' && data.staffKey == 'evans')
-        || (data.staffName == 'Latoya' && data.staffKey == 'latoya')
         || (data.staffName == 'Meda' && data.staffKey == 'meda')
-        || (data.staffName == 'Abby' && data.staffKey == 'abby');
+        || (data.staffName == 'Abby' && data.staffKey == 'abby')
+        || (data.staffName == 'Manier' && data.staffKey == 'manier');
     }
 
     function validRequest(requestId, data) {
