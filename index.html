@@ -460,7 +460,7 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
         <div class="req-actions">
           <button class="btn" type="submit" id="submitRequest">Submit request</button>
         </div>
-        <p class="req-small">Requests save directly to the Friday scheduling system. Google sign-in identifies the submission.</p>
+        <p class="req-small">Requests save directly to the Friday scheduling system. No sign-in is required.</p>
       </form>
     </div>
   </section>
@@ -577,7 +577,6 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js"></script>
 
 <script type="application/json" id="data">
@@ -817,10 +816,7 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
     appId: "1:558058912278:web:921853261b4002ba52d337"
   };
   if (!firebase.apps.length) firebase.initializeApp(requestFirebaseConfig);
-  var requestAuth = firebase.auth();
   var requestDb = firebase.firestore();
-  var requestProvider = new firebase.auth.GoogleAuthProvider();
-  var requestAdmins = ["jacob.evans@explore.academy", "jacobicusjax@gmail.com"];
 
   var requestRows = function () {
     return SCHOOL.filter(function (f) { return daysFrom(f.d) > 0; });
@@ -836,20 +832,6 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
     el.classList.remove("req-ok", "req-error");
     el.textContent = "Submitting this request means you will not be scheduled on that Friday.";
   };
-  var ensureRequestUser = async function () {
-    var user = requestAuth.currentUser;
-    if (!user) {
-      var result = await requestAuth.signInWithPopup(requestProvider);
-      user = result.user;
-    }
-    var email = String(user && user.email || "").toLowerCase();
-    var allowed = /@explore[.]academy$/.test(email) || requestAdmins.indexOf(email) > -1;
-    if (!allowed) {
-      await requestAuth.signOut();
-      throw new Error("Use your Explore Academy Google account.");
-    }
-    return user;
-  };
   var submitFridayRequest = async function () {
     var r = requestRecord();
     if (!r.friday || !r.staff) return;
@@ -859,7 +841,6 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
     status.classList.remove("req-ok", "req-error");
     status.textContent = "Saving request…";
     try {
-      var user = await ensureRequestUser();
       var staffKey = String(r.staff).toLowerCase();
       var docId = staffKey + "__" + r.friday.date;
       await requestDb.collection("fridayOffRequests").doc(docId).set({
@@ -867,8 +848,6 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
         staffKey: staffKey,
         fridayDate: r.friday.date,
         canSwap: r.swap,
-        submittedByEmail: String(user.email || "").toLowerCase(),
-        submittedByUid: user.uid,
         submittedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: false });
       status.classList.add("req-ok");
@@ -876,7 +855,7 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
     } catch (e) {
       status.classList.add("req-error");
       var msg = e && e.message ? e.message : "Could not save the request.";
-      if (/permission/i.test(msg)) msg = "This request could not be saved. Make sure you are signed in with your Explore Academy account and that Friday request access is enabled.";
+      if (/permission/i.test(msg)) msg = "This request could not be saved yet. Friday request access is still being connected.";
       status.textContent = msg;
     } finally {
       btn.disabled = false;
