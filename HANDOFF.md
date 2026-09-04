@@ -34,7 +34,9 @@ Active Friday pool:
 - Abby
 - Manier
 
-Latoya is no longer part of the active future Friday pool. Dorr and McKinley also must not receive future Friday assignments. Historical records may still contain former staff and should not be rewritten merely for appearance.
+`Manier` is the display name used for Latoya Manier in this system. This is a naming change, not a removal from the rotation.
+
+Dorr and McKinley must not receive future Friday assignments. Historical records may still contain former staff and should not be rewritten merely for appearance.
 
 ### Standing Friday support
 
@@ -156,7 +158,7 @@ Priorities:
 2. Use the locked active staff pool: Lingam, Evans, Meda, Abby, Manier.
 3. Treat Meda as standing Friday support unless she has requested that Friday off.
 4. Build regular rotating coverage primarily across Abby, Manier, Evans, and Lingam.
-5. Never assign Latoya, Dorr, or McKinley on future dates.
+5. Never assign Dorr or McKinley on future dates.
 6. Preserve the seven locked Teacher Clarity training dates.
 7. Maintain required student coverage.
 8. Handle training Fridays separately from regular Fridays.
