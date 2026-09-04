@@ -24,20 +24,42 @@ Firebase rules: `firestore.rules`
 
 Firebase config: `firebase.json` + `.firebaserc`
 
-## Active Friday staff
+## Locked Friday staffing model
+
+Active Friday pool:
 
 - Lingam
 - Evans
-- Latoya
 - Meda
 - Abby
+- Manier
 
-Former staff who must not receive future assignments:
+Latoya is no longer part of the active future Friday pool. Dorr and McKinley also must not receive future Friday assignments. Historical records may still contain former staff and should not be rewritten merely for appearance.
 
-- Dorr
-- McKinley
+### Standing Friday support
 
-Historical August records may still contain former staff and should not be rewritten merely for appearance.
+Meda is treated as a standing Friday presence / campus support person. The regular rotating coverage pool is primarily:
+
+- Abby
+- Manier
+- Evans
+- Lingam
+
+Meda may still submit a Friday-off request; any such request is a hard unavailability constraint.
+
+### Fixed Teacher Clarity training Fridays
+
+The following dates are locked as Teacher Clarity training Fridays based on the September 4 staffing chat:
+
+- September 18, 2026
+- October 23, 2026
+- November 13, 2026
+- January 29, 2027
+- February 26, 2027
+- March 26, 2027
+- April 23, 2027
+
+Training Fridays must be scheduled separately from normal Friday rotation logic. The staffing chat specifically indicates short-staffing may require only Meda and Lingam to attend some trainings while remaining staff cover students. Do not assume that pattern automatically; treat it as a scheduling option when solving the final calendar.
 
 ## Firebase architecture
 
@@ -47,21 +69,12 @@ The Friday system is standalone and uses Firebase project:
 
 It does **not** use Dragonswood Firebase.
 
-Web configuration:
-
-- authDomain: `friday-rotation-board.firebaseapp.com`
-- projectId: `friday-rotation-board`
-- storageBucket: `friday-rotation-board.firebasestorage.app`
-- messagingSenderId: `558058912278`
-- appId: `1:558058912278:web:921853261b4002ba52d337`
-
-The public Firebase API key is embedded in the web app as normal Firebase web configuration. No service-account private key belongs in the repository.
-
 The system uses:
 
-- Firebase Authentication → Google sign-in
+- public no-login staff submission
 - Cloud Firestore
 - collection: `fridayOffRequests`
+- Google sign-in only for the protected admin page
 - no Cloud Functions
 
 ## Request document model
@@ -74,17 +87,17 @@ Example:
 
 `evans__2026-09-11`
 
-Fields:
+Current stored fields:
 
 ```text
 staffName
 staffKey
 fridayDate
 canSwap
-submittedByEmail
-submittedByUid
 submittedAt
 ```
+
+`canSwap` is retained internally for compatibility but is no longer exposed as a staff choice. Operationally every request simply means the person is unavailable that Friday.
 
 Submitting the same staff/date again overwrites the same record rather than creating a duplicate.
 
@@ -92,36 +105,31 @@ Submitting the same staff/date again overwrites the same record rather than crea
 
 Firestore rules are the authority.
 
-Staff submission:
+Public staff submission:
 
-- must be signed in
-- must use an `@explore.academy` account, except explicit admin accounts
+- no sign-in required
 - staff name/key must be one of the five active staff
 - document ID must match staff/date
-- submitter email and UID must match Firebase Auth
+- request data is not publicly readable
 
 Admin read/delete access is restricted to:
 
 - `jacob.evans@explore.academy`
 - `jacobicusjax@gmail.com`
 
-Other users cannot list all requests.
-
 ## Public request behavior
 
-Staff choose:
+Staff choose only:
 
 1. staff member
 2. Friday requested off
-3. whether they can work another Friday instead
 
 On submit:
 
-1. Google sign-in occurs if needed.
-2. Firestore saves the request.
-3. The status box changes to green with `Request saved ✓` and the selected Friday.
+1. Firestore saves the request.
+2. The status box changes to green with `Request saved ✓` and the selected Friday.
 
-If saving fails, the status box shows an error instead of pretending success.
+There is no flexibility checkbox and no staff sign-in.
 
 ## Admin page
 
@@ -131,44 +139,29 @@ It shows:
 
 - total requests
 - number of Fridays affected
-- all individual requests
-- who submitted each request
-- whether each person can swap
+- individual staff/date requests
 - how many active staff remain available on each affected Friday
-- coverage conflict warnings when fewer than two of the five active staff remain available
+- coverage conflict warnings when fewer than two active staff remain available
 - remove-request control
-
-## One-time Firebase console requirements
-
-Before real submissions can succeed:
-
-1. Create Firestore Database in project `friday-rotation-board`.
-2. Enable Authentication → Google.
-3. Add `jacobevans-cell.github.io` to Authentication authorized domains.
-4. Publish the repository's `firestore.rules`.
-
-Rules-only Firebase CLI deployment:
-
-```bash
-firebase deploy --only firestore:rules --project friday-rotation-board
-```
 
 ## Schedule generation rules
 
-The old four-person 22/22/22/22 draft is obsolete as a final schedule because Abby is now a fifth rotating teacher and real day-off requests have not yet been incorporated.
+The old embedded draft schedule is not final truth. A new schedule will be generated after day-off requests are collected.
 
 When generating the new schedule, treat Firestore request records as hard unavailability constraints.
 
 Priorities:
 
 1. Never schedule someone on a requested-off Friday.
-2. Never assign Dorr or McKinley on future dates.
-3. Maintain required student coverage.
-4. Preserve valid training-Friday structure.
-5. Balance total Friday workload across the five active staff as evenly as possible.
-6. Balance missed-training / stay-back assignments as evenly as possible.
-7. Use `canSwap` when choosing compensating Fridays.
-8. Flag impossible dates instead of inventing invalid coverage.
+2. Use the locked active staff pool: Lingam, Evans, Meda, Abby, Manier.
+3. Treat Meda as standing Friday support unless she has requested that Friday off.
+4. Build regular rotating coverage primarily across Abby, Manier, Evans, and Lingam.
+5. Never assign Latoya, Dorr, or McKinley on future dates.
+6. Preserve the seven locked Teacher Clarity training dates.
+7. Maintain required student coverage.
+8. Handle training Fridays separately from regular Fridays.
+9. Balance regular rotating workload as evenly as possible after hard constraints.
+10. Flag impossible dates instead of inventing invalid coverage.
 
 Nothing should become publicly visible as a schedule until the generated rotation is reviewed and deliberately published.
 
