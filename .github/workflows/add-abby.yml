@@ -4,6 +4,7 @@ name: Add Abby to Friday rotation
   push:
     paths:
       - 'scripts/add_abby.py'
+      - '.github/workflows/add-abby.yml'
 
 permissions:
   contents: write
