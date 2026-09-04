@@ -37,12 +37,19 @@
 </main>
 <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js"></script>
 <script>
-const config={apiKey:'AIzaSyC918WJoGQgxRKsqcz-3bXI7iZWv_1bwYE',authDomain:'dragonswood-9289e.firebaseapp.com',projectId:'dragonswood-9289e',storageBucket:'dragonswood-9289e.firebasestorage.app',messagingSenderId:'1064477064695',appId:'1:1064477064695:web:283e1016ee2303d39042f2',measurementId:'G-LPRLDGVBD2'};
+const config={
+  apiKey:'AIzaSyDYzp_yHSiOGp26FOyXC-8-9U5MBz-QC-0',
+  authDomain:'friday-rotation-board.firebaseapp.com',
+  projectId:'friday-rotation-board',
+  storageBucket:'friday-rotation-board.firebasestorage.app',
+  messagingSenderId:'558058912278',
+  appId:'1:558058912278:web:921853261b4002ba52d337'
+};
 if(!firebase.apps.length)firebase.initializeApp(config);
 const auth=firebase.auth();
-const fn=firebase.app().functions('us-central1');
+const db=firebase.firestore();
 const STAFF=['Lingam','Evans','Latoya','Meda','Abby'];
 const REQUIRED_COVERAGE=2;
 const $=id=>document.getElementById(id);
@@ -51,8 +58,8 @@ const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 async function load(){
   $('who').textContent='Loading requests…';
   try{
-    const res=await fn.httpsCallable('listFridayOffRequests')({});
-    const requests=res.data.requests||[];
+    const snap=await db.collection('fridayOffRequests').orderBy('fridayDate').get();
+    const requests=snap.docs.map(doc=>({id:doc.id,...doc.data()}));
     $('who').textContent='Admin access verified.';
     $('who').className='ok';
     $('refresh').hidden=false;
@@ -79,7 +86,7 @@ async function load(){
 }
 $('signIn').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{$('who').textContent=e.message;$('who').className='bad';});
 $('refresh').onclick=load;
-$('rows').onclick=async e=>{const b=e.target.closest('[data-delete]');if(!b)return;if(!confirm('Remove this day-off request?'))return;b.disabled=true;try{await fn.httpsCallable('deleteFridayOffRequest')({id:b.dataset.delete});await load();}catch(err){alert(err.message);b.disabled=false;}};
+$('rows').onclick=async e=>{const b=e.target.closest('[data-delete]');if(!b)return;if(!confirm('Remove this day-off request?'))return;b.disabled=true;try{await db.collection('fridayOffRequests').doc(b.dataset.delete).delete();await load();}catch(err){alert(err.message);b.disabled=false;}};
 auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='Not signed in.';$('who').className='muted';return;}$('signIn').hidden=true;load();});
 </script>
 </body>
