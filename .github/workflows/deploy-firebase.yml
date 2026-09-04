@@ -24,16 +24,29 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
-        id: auth
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD }}
-          token_format: access_token
+      - name: Prepare service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "Missing FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD"
+            exit 1
+          fi
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+
+      - name: Authenticate with service account key
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+          ACCESS_TOKEN="$(gcloud auth print-access-token)"
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
 
       - name: Deploy Firestore rules directly
         env:
-          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
           PROJECT_ID: friday-rotation-board
         shell: bash
         run: |
@@ -55,11 +68,14 @@ jobs:
 
           RELEASE_BODY=$(jq -n --arg ruleset "$RULESET_NAME" '{rulesetName:$ruleset}')
 
-          if curl -fsS -X PATCH \
+          HTTP_CODE=$(curl -sS -o "$RUNNER_TEMP/release.json" -w '%{http_code}' -X PATCH \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d "$RELEASE_BODY" \
-            "https://firebaserules.googleapis.com/v1/projects/$PROJECT_ID/releases/cloud.firestore?updateMask=rulesetName"; then
+            "https://firebaserules.googleapis.com/v1/projects/$PROJECT_ID/releases/cloud.firestore?updateMask=rulesetName")
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            cat "$RUNNER_TEMP/release.json"
             echo "Updated existing cloud.firestore release."
           else
             curl -fsS -X POST \
