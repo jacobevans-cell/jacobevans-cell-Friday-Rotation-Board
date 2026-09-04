@@ -36,7 +36,7 @@ service cloud.firestore {
     function validRequest(requestId, data) {
       return data.keys().hasOnly([
           'staffName', 'staffKey', 'fridayDate', 'canSwap',
-          'submittedByEmail', 'submittedByUid', 'createdAt', 'updatedAt'
+          'submittedByEmail', 'submittedByUid', 'submittedAt'
         ])
         && data.staffName is string
         && data.staffKey is string
@@ -45,23 +45,20 @@ service cloud.firestore {
         && data.canSwap is bool
         && data.submittedByEmail == email()
         && data.submittedByUid == request.auth.uid
-        && data.updatedAt == request.time
+        && data.submittedAt == request.time
         && validStaffPair(data)
         && requestId == data.staffKey + '__' + data.fridayDate;
     }
 
     match /fridayOffRequests/{requestId} {
-      allow read: if isAdmin()
-                  || (signedIn() && resource.data.submittedByUid == request.auth.uid);
+      allow read: if isAdmin();
 
       allow create: if (isExploreStaff() || isAdmin())
-                    && validRequest(requestId, request.resource.data)
-                    && request.resource.data.createdAt == request.time;
+                    && validRequest(requestId, request.resource.data);
 
       allow update: if (isExploreStaff() || isAdmin())
                     && resource.data.submittedByUid == request.auth.uid
-                    && validRequest(requestId, request.resource.data)
-                    && request.resource.data.createdAt == resource.data.createdAt;
+                    && validRequest(requestId, request.resource.data);
 
       allow delete: if isAdmin();
     }
