@@ -367,17 +367,28 @@ textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-
   section{break-inside:auto}
   a[href]::after{content:""}
 }
+
+/* REQUEST-ONLY MODE */
+body.request-only .idbar,
+body.request-only .mast-tools,
+body.request-only main > section:not(#requests),
+body.request-only footer{display:none !important}
+body.request-only main{width:min(920px,100% - 2rem);padding-block:2rem 4rem;gap:0}
+body.request-only #requests{display:block}
+body.request-only .request-panel{grid-template-columns:1fr}
+body.request-only .request-intro{border-left:5px solid var(--brass)}
+
 </style>
 </head>
-<body>
+<body class="request-only">
 
 <header class="masthead">
   <div class="wrap mast">
     <div class="mast-id">
       <div class="monogram" aria-hidden="true">FRI</div>
       <div>
-        <p class="mast-eyebrow">Campus &amp; staff rotation &middot; 2026&ndash;2027</p>
-        <h1>Friday Rotation Board</h1>
+        <p class="mast-eyebrow">Friday availability &middot; 2026&ndash;2027</p>
+        <h1>Friday Day-Off Requests</h1>
         <p class="mast-sub" id="mastSub"></p>
       </div>
     </div>
@@ -411,15 +422,15 @@ textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-
 
   <section id="requests" aria-labelledby="reqHead">
     <header>
-      <h2 id="reqHead">Friday availability requests</h2>
-      <p class="hint">Requests protect availability; they do not change coverage until approved.</p>
+      <h2 id="reqHead">Request a Friday off</h2>
+      <p class="hint">The Friday duty schedule is being rebuilt and is not published yet.</p>
     </header>
     <div class="request-panel">
       <div class="request-intro">
-        <p class="eyebrow">Plan around real life</p>
-        <h3>Request a Friday off</h3>
-        <p>Choose your name and the Friday you need protected. The board shows your current assignment before opening a pre-addressed school Gmail message to the schedule manager.</p>
-        <div class="request-callout"><b>Important:</b> requesting a date does not automatically remove you from duty. Coverage is rebalanced only after the request is approved, so we never create a silent staffing hole.</div>
+        <p class="eyebrow">Availability collection</p>
+        <h3>Tell us which Friday you need off</h3>
+        <p>Choose your name and the Friday you need off. These requests will be used to build the new Friday rotation before any duty schedule is published.</p>
+        <div class="request-callout"><b>No assignments are being shown yet.</b> A request records your availability only. The final Friday schedule will be published after requests are reviewed.</div>
       </div>
       <form class="request-form" id="requestForm">
         <div class="req-grid">
@@ -428,31 +439,20 @@ textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-
             <select id="reqStaff" required></select>
           </div>
           <div class="req-field">
-            <label for="reqFriday">Friday requested</label>
+            <label for="reqFriday">Friday requested off</label>
             <select id="reqFriday" required></select>
           </div>
-          <div class="req-field">
-            <label for="reqPriority">Request level</label>
-            <select id="reqPriority">
-              <option value="Cannot work this Friday">Cannot work this Friday</option>
-              <option value="Prefer this Friday off">Prefer this Friday off</option>
-            </select>
-          </div>
-          <div class="req-field">
-            <label>Flexibility</label>
-            <label class="req-check"><input type="checkbox" id="reqSwap" checked> I can swap to another Friday if needed</label>
-          </div>
           <div class="req-field full">
-            <label for="reqNote">Optional note</label>
-            <textarea id="reqNote" maxlength="500" placeholder="Anything the schedule manager should know. No reason is required."></textarea>
+            <label>Flexibility</label>
+            <label class="req-check"><input type="checkbox" id="reqSwap" checked> I can work a different Friday instead if needed</label>
           </div>
         </div>
-        <p class="req-status" id="reqStatus"></p>
+        <p class="req-status" id="reqStatus">This is an availability request only. No Friday assignments are currently published.</p>
         <div class="req-actions">
           <button class="btn" type="submit">Open request email</button>
           <button class="btn ghost" type="button" id="reqCopy">Copy request</button>
         </div>
-        <p class="req-small">The email is addressed to the schedule manager. Staff still press Send in Gmail; the website never sends mail silently.</p>
+        <p class="req-small">The request opens in Gmail addressed to the schedule manager. Review it, then press Send.</p>
       </form>
     </div>
   </section>
@@ -794,32 +794,16 @@ textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-
 
   /* ---------- Friday-off requests ---------- */
   var requestRows = function () {
-    return SCHOOL.filter(function (f) { return daysFrom(f.d) >= 0; });
+    return SCHOOL.filter(function (f) { return daysFrom(f.d) > 0; });
   };
   var requestRecord = function () {
     var staff = $("reqStaff").value;
     var iso = $("reqFriday").value;
     var f = D.fridays.filter(function (x) { return x.date === iso; })[0];
-    var st = f && staff ? statusOf(f.status[staff]) : null;
-    return {
-      staff: staff,
-      friday: f,
-      priority: $("reqPriority").value,
-      swap: $("reqSwap").checked,
-      note: $("reqNote").value.trim(),
-      status: st
-    };
+    return { staff: staff, friday: f, swap: $("reqSwap").checked };
   };
   var updateRequestStatus = function () {
-    var r = requestRecord();
-    if (!r.friday || !r.staff || !r.status) {
-      $("reqStatus").innerHTML = "<strong>Select a staff member and Friday.</strong>";
-      return;
-    }
-    var msg = "<strong>Current schedule:</strong> " + esc(r.status.label) + ".";
-    if (!r.status.work) msg += " This date is already off; submitting a request protects it when later requests are rebalanced.";
-    else if (r.friday.staysWith === r.staff) msg += " You are currently the stay-back staff member for this training.";
-    $("reqStatus").innerHTML = msg;
+    $("reqStatus").textContent = "This is an availability request only. No Friday assignments are currently published.";
   };
   var requestText = function () {
     var r = requestRecord();
@@ -828,13 +812,10 @@ textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-
       "FRIDAY OFF REQUEST",
       "",
       "Staff: " + r.staff,
-      "Friday: Friday, " + fmtLong(r.friday.d),
-      "Request level: " + r.priority,
-      "Current schedule: " + (r.status ? r.status.label : "Not listed"),
-      "Can swap to another Friday: " + (r.swap ? "Yes" : "No"),
-      "Note: " + (r.note || "—"),
+      "Friday requested off: Friday, " + fmtLong(r.friday.d),
+      "Can work a different Friday instead: " + (r.swap ? "Yes" : "No"),
       "",
-      "I understand this request does not change the posted schedule until it is approved and coverage is updated."
+      "This request is for availability planning. The new Friday duty schedule has not been published yet."
     ].join("\n");
   };
   var copyRequest = function () {
@@ -866,12 +847,11 @@ textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-
     $("reqStaff").innerHTML = D.staff.map(function (n) { return '<option value="' + esc(n) + '">' + esc(n) + "</option>"; }).join("");
     var rr = requestRows();
     $("reqFriday").innerHTML = rr.map(function (f) {
-      return '<option value="' + f.date + '">' + esc(fmtLong(f.d)) + " · " + esc(typeOf(f.type).short) + "</option>";
+      return '<option value="' + f.date + '">' + esc(fmtLong(f.d)) + "</option>";
     }).join("");
     if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;
     $("reqStaff").addEventListener("change", updateRequestStatus);
     $("reqFriday").addEventListener("change", updateRequestStatus);
-    $("reqPriority").addEventListener("change", updateRequestStatus);
     $("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); openRequestEmail(); });
     $("reqCopy").addEventListener("click", copyRequest);
     updateRequestStatus();
@@ -1237,7 +1217,7 @@ textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-
     writeHash();
   };
 
-  $("mastSub").textContent = D.subtitle.replace(/\s*\|\s*/g, " · ");
+  $("mastSub").textContent = "The Friday duty schedule is being rebuilt. This page is temporarily for day-off requests only.";
   $("stamp").textContent = "Today: " + (today.getDay() === 5 ? "Friday, " : "") + fmtLong(today);
   renderRequestForm();
   renderDay();

@@ -2,6 +2,8 @@
 
 This supersedes the original handoff after the September 4, 2026 staffing change.
 
+**TEMPORARY PUBLIC MODE (Sep 4, 2026):** The site is locked to Friday-off requests only. Rotation, assignments, workload totals, training labels, and calendar views remain in source but are intentionally hidden from staff until availability requests are processed and a real schedule is approved.
+
 **Current status:** the Friday Rotation Board has been rebuilt for four active Friday-duty staff and now includes a Friday-off request workflow. The unrelated volleyball site in the repository root remains untouched.
 
 ---

@@ -1,5 +1,7 @@
 # Friday Rotation Board
 
+> **Public mode right now:** request days off only. The rotation/schedule is intentionally hidden until availability requests are reviewed.
+
 Standalone 2026–2027 Friday campus and staff rotation system for Explore Academy.
 
 ## Current active Friday staff
