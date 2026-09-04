@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Trigger patch after workflow exists.
 # Public page: add an Admin button next to theme toggle.
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
@@ -8,7 +9,6 @@ if 'href="admin.html"' not in s:
     i = s.find(marker)
     if i < 0:
         raise SystemExit('theme button not found')
-    # Insert before theme button so Admin is always visible beside it.
     s = s[:i] + '<a class="tool" href="admin.html" aria-label="Open admin controls">Admin</a>\n          ' + s[i:]
 p.write_text(s, encoding='utf-8')
 
