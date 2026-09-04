@@ -370,9 +370,11 @@ textarea.ics{width:100%;height:11rem;font-family:'IBM Plex Mono',monospace;font-
 
 /* REQUEST-ONLY MODE */
 body.request-only .idbar,
-body.request-only .mast-tools,
 body.request-only main > section:not(#requests),
 body.request-only footer{display:none !important}
+body.request-only .mast-tools{display:flex !important}
+body.request-only #jumpBtn,
+body.request-only #printBtn{display:none !important}
 body.request-only main{width:min(920px,100% - 2rem);padding-block:2rem 4rem;gap:0}
 body.request-only #requests{display:block}
 body.request-only .request-panel{grid-template-columns:1fr}
@@ -681,18 +683,21 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
   readHash();
 
   /* ---------- theme ---------- */
-  var themes = ["auto", "light", "dark"];
-  var icons = { auto: "◐", light: "☀", dark: "☽" };
-  var theme = "auto";
-  try { theme = localStorage.getItem("friday.theme") || "auto"; } catch (e) {}
+  var theme = "light";
+  try {
+    var savedTheme = localStorage.getItem("friday.theme");
+    if (savedTheme === "light" || savedTheme === "dark") theme = savedTheme;
+    else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) theme = "dark";
+  } catch (e) {}
   var applyTheme = function () {
-    if (theme === "auto") document.documentElement.removeAttribute("data-theme");
-    else document.documentElement.setAttribute("data-theme", theme);
-    $("themeIcon").textContent = icons[theme];
-    $("themeLabel").textContent = theme.charAt(0).toUpperCase() + theme.slice(1);
+    document.documentElement.setAttribute("data-theme", theme);
+    var nextIsDark = theme === "light";
+    $("themeIcon").textContent = nextIsDark ? "☽" : "☀";
+    $("themeLabel").textContent = nextIsDark ? "Dark mode" : "Light mode";
+    $("themeBtn").setAttribute("aria-label", nextIsDark ? "Switch to dark mode" : "Switch to light mode");
   };
   $("themeBtn").addEventListener("click", function () {
-    theme = themes[(themes.indexOf(theme) + 1) % 3];
+    theme = theme === "light" ? "dark" : "light";
     try { localStorage.setItem("friday.theme", theme); } catch (e) {}
     applyTheme();
   });
