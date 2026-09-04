@@ -35,11 +35,9 @@ for f in data['fridays']:
         }
     if d=='2027-05-07':
         assert f['type']=='REGULAR FRIDAY'
-        # Keep existing Manier + Lingam assignment, but assert travel absences are protected.
         f['status']['Evans']='OFF'
         f['status']['Abby']='OFF'
 
-# Validate the travel absences and all future coverage rules.
 for f in data['fridays']:
     d=f['date']; st=f.get('status',{})
     if d in ABSENT:
@@ -56,7 +54,6 @@ for f in data['fridays']:
         assert len(stay)==1,(d,stay)
         assert len(join)==1,(d,join)
 
-# Rebuild summary from the reflowed live schedule.
 working={'Full Day 7:30–1:30','Morning Coverage + Training','Training 11:30–1:30','Full-Day Coverage — Misses Training','On Campus (Completed)'}
 summary=[]
 for name in STAFF:
@@ -71,7 +68,6 @@ for name in STAFF:
     summary.append({'name':name,'months':month_counts,'total':total,'trainingsMissed':missed})
 data['summary']=summary
 
-# Regular Friday rotation must remain unchanged by these travel absences.
 regular={n:0 for n in ['Lingam','Evans','Manier','Abby']}
 for f in data['fridays']:
     if f['date']>='2026-09-04' and f['type']=='REGULAR FRIDAY':
@@ -88,3 +84,5 @@ print('May 7:', next(f['status'] for f in data['fridays'] if f['date']=='2027-05
 print('Regular totals:', regular)
 print('Summary totals:', {x['name']:x['total'] for x in summary})
 print('Trainings missed:', {x['name']:x['trainingsMissed'] for x in summary})
+
+# one-time trigger 2026-09-04
