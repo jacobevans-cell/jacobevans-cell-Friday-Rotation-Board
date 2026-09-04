@@ -1,3 +1,4 @@
+# Trigger workflow after creation.
 from pathlib import Path
 
 p=Path('index.html')
