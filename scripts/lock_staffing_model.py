@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Trigger after workflow exists.
 # Public page: replace active request staff pool only. Leave hidden draft assignments untouched.
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
