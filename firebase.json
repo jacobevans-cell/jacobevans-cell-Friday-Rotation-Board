@@ -1,9 +1,5 @@
 {
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "friday-scheduler",
-      "runtime": "nodejs22"
-    }
-  ]
+  "firestore": {
+    "rules": "firestore.rules"
+  }
 }
