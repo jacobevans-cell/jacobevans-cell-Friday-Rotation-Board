@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Friday Requests Admin</title>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#14213d;background:#eef1f5}*{box-sizing:border-box}body{margin:0}header{background:#1b3a6b;color:#fff;padding:24px;border-bottom:3px solid #b07a12}main{width:min(1100px,calc(100% - 28px));margin:24px auto}.card{background:#fff;border:1px solid #d5dbe5;border-radius:10px;padding:18px;box-shadow:0 8px 24px -16px rgba(20,33,61,.28);margin-bottom:16px}button{font:inherit;font-weight:700;border:1px solid #1b3a6b;background:#1b3a6b;color:#fff;border-radius:7px;padding:9px 13px;cursor:pointer}button.ghost{background:#fff;color:#1b3a6b}.muted{color:#66748d}.ok{color:#17603f}.bad{color:#9a2f2f}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #e6eaf1}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#65728a}.pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:.8rem;font-weight:700;background:#edf1f7}.conflict{background:#fff1ef;border-left:5px solid #b5463b}.warn{background:#fff8e6;border-left:5px solid #b07a12}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.stat{padding:12px;background:#f5f7fa;border-radius:8px}.stat b{display:block;font-size:1.5rem}@media(max-width:700px){table{font-size:.88rem}th:nth-child(4),td:nth-child(4){display:none}}
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#14213d;background:#eef1f5}*{box-sizing:border-box}body{margin:0}header{background:#1b3a6b;color:#fff;padding:24px;border-bottom:3px solid #b07a12}main{width:min(1100px,calc(100% - 28px));margin:24px auto}.card{background:#fff;border:1px solid #d5dbe5;border-radius:10px;padding:18px;box-shadow:0 8px 24px -16px rgba(20,33,61,.28);margin-bottom:16px}button{font:inherit;font-weight:700;border:1px solid #1b3a6b;background:#1b3a6b;color:#fff;border-radius:7px;padding:9px 13px;cursor:pointer}button.ghost{background:#fff;color:#1b3a6b}.muted{color:#66748d}.ok{color:#17603f}.bad{color:#9a2f2f}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #e6eaf1}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#65728a}.pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:.8rem;font-weight:700;background:#edf1f7}.conflict{background:#fff1ef;border-left:5px solid #b5463b}.warn{background:#fff8e6;border-left:5px solid #b07a12}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.stat{padding:12px;background:#f5f7fa;border-radius:8px}.stat b{display:block;font-size:1.5rem}@media(max-width:700px){table{font-size:.88rem}}
 </style>
 </head>
 <body>
@@ -29,7 +29,7 @@
     <h2>All requests</h2>
     <div style="overflow:auto">
       <table>
-        <thead><tr><th>Friday</th><th>Staff</th><th>Submitted by</th><th></th></tr></thead>
+        <thead><tr><th>Friday</th><th>Staff</th><th></th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -78,7 +78,7 @@ async function load(){
       return `<div class="card ${bad?'conflict':off.length>=2?'warn':''}"><b>${esc(fmt(date))}</b> · ${off.length} off · ${available} available${bad?' · COVERAGE CONFLICT':''}<br><span class="muted">${off.map(x=>esc(x.staffName)).join(', ')}</span></div>`;
     }).join('');
     $('conflicts').textContent=conflicts;
-    $('rows').innerHTML=requests.map(r=>`<tr><td>${esc(fmt(r.fridayDate))}</td><td><b>${esc(r.staffName)}</b></td><td>${esc(r.submittedByEmail||'')}</td><td><button class="ghost" data-delete="${esc(r.id)}">Remove</button></td></tr>`).join('');
+    $('rows').innerHTML=requests.map(r=>`<tr><td>${esc(fmt(r.fridayDate))}</td><td><b>${esc(r.staffName)}</b></td><td><button class="ghost" data-delete="${esc(r.id)}">Remove</button></td></tr>`).join('');
   }catch(e){
     $('who').textContent=e.message||'Could not load requests.';
     $('who').className='bad';
