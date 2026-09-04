@@ -1,0 +1,49 @@
+name: Seed known Friday requests
+
+on:
+  push:
+    paths:
+      - 'scripts/seed_known_requests.trigger'
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare service account key
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+      - name: Authenticate
+        run: |
+          set -euo pipefail
+          gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+          echo "ACCESS_TOKEN=$(gcloud auth print-access-token)" >> "$GITHUB_ENV"
+      - name: Seed requests and list records
+        env:
+          PROJECT_ID: friday-rotation-board
+        run: |
+          set -euo pipefail
+          base="https://firestore.googleapis.com/v1/projects/$PROJECT_ID/databases/(default)/documents/fridayOffRequests"
+          now=$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)
+          seed_one(){
+            staff="$1"; key="$2"; date="$3"; id="${key}__${date}"
+            body=$(jq -n --arg staff "$staff" --arg key "$key" --arg date "$date" --arg now "$now" '{fields:{staffName:{stringValue:$staff},staffKey:{stringValue:$key},fridayDate:{stringValue:$date},canSwap:{booleanValue:true},submittedAt:{timestampValue:$now}}}')
+            curl -fsS -X PATCH -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" -d "$body" "$base/$id" >/dev/null
+            echo "SEEDED|$staff|$date|$id"
+          }
+          seed_one Meda meda 2026-09-04
+          seed_one Meda meda 2026-10-02
+          seed_one Meda meda 2026-11-06
+          seed_one Meda meda 2027-01-15
+          seed_one Meda meda 2027-02-12
+          seed_one Manier manier 2027-04-30
+          echo "--- CURRENT REQUESTS ---"
+          curl -fsS -H "Authorization: Bearer $ACCESS_TOKEN" "$base?pageSize=100" > "$RUNNER_TEMP/requests.json"
+          jq -r '.documents[]? | [.fields.staffName.stringValue,.fields.fridayDate.stringValue,.name] | @tsv' "$RUNNER_TEMP/requests.json" | sort
