@@ -1,0 +1,29 @@
+name: Remove Friday Staff Login
+
+on:
+  push:
+    paths:
+      - 'scripts/remove_staff_login.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove staff login requirement
+        run: python3 scripts/remove_staff_login.py
+      - name: Commit public request simplification
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed."
+            exit 0
+          fi
+          git commit -m "Remove staff sign-in from Friday requests"
+          git push
