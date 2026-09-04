@@ -1,4 +1,4 @@
-// Anonymous staff request flow v2
+// Anonymous staff request flow v3
 rules_version = '2';
 
 service cloud.firestore {
@@ -44,12 +44,7 @@ service cloud.firestore {
 
     match /fridayOffRequests/{requestId} {
       allow read: if isAdmin();
-
-      // Staff do not need to sign in. Public submissions are restricted to
-      // the five approved staff names, a valid school-year date string, and
-      // the deterministic staff+date document id.
       allow create, update: if validRequest(requestId, request.resource.data);
-
       allow delete: if isAdmin();
     }
 
