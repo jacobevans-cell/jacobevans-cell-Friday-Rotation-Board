@@ -1,23 +1,65 @@
-# Deploy the Friday Request Backend
+# Friday Rotation Board — Firebase Setup
 
-The public GitHub Pages form and `admin.html` are already wired to Firebase project `dragonswood-9289e`.
+This project now uses its own Firebase project:
 
-From a computer with Firebase CLI access, run from the root of this repository:
+`friday-rotation-board`
+
+It does **not** use Dragonswood Firebase.
+
+## Architecture
+
+- GitHub Pages hosts `index.html` and `admin.html`.
+- Firebase Authentication handles Google sign-in.
+- Cloud Firestore stores `fridayOffRequests`.
+- No Cloud Functions are required.
+- A submitted request is automatically treated as an approved day off.
+
+## One-time Firebase Console setup
+
+1. In Firebase project `friday-rotation-board`, create a Firestore database in Production mode.
+2. Authentication → Sign-in method → enable Google.
+3. Authentication → Settings → Authorized domains → add `jacobevans-cell.github.io`.
+4. Publish the repository's `firestore.rules`.
+
+From Firebase CLI, the rules-only deploy is:
 
 ```bash
 firebase login
-firebase deploy --only functions:friday-scheduler --project dragonswood-9289e
+firebase deploy --only firestore:rules --project friday-rotation-board
 ```
 
-This deploys only the dedicated `friday-scheduler` functions codebase. It does **not** deploy or replace Dragonswood's other Functions, Hosting, or Firestore rules.
+The repository's `.firebaserc` already points to `friday-rotation-board`, so from the repo root this also works after login:
 
-After deployment:
+```bash
+firebase deploy --only firestore:rules
+```
 
-- Staff submit requests on the main GitHub Pages site.
-- Each saved request gets a green `Request saved ✓` confirmation.
-- Requests are stored centrally in Firestore collection `fridayOffRequests`.
-- Admin view: `https://jacobevans-cell.github.io/jacobevans-cell-Friday-Rotation-Board/admin.html`
-- Admin sign-in is allowed for `jacob.evans@explore.academy` and `jacobicusjax@gmail.com`.
-- The admin page groups requests by Friday and flags a coverage conflict when fewer than two of the five active staff remain available.
+## What happens after rules are live
 
-A submitted request is automatically treated as approved/unavailable. There is no pending/approval state.
+- Staff open the public Friday request page.
+- They choose a staff name, Friday, and whether they can work another Friday instead.
+- Google sign-in identifies the submitting account.
+- The request is saved to Firestore collection `fridayOffRequests`.
+- The page shows a green `Request saved ✓` confirmation.
+- Duplicate submissions for the same staff/date overwrite the same deterministic record instead of creating duplicates.
+
+## Admin view
+
+`https://jacobevans-cell.github.io/jacobevans-cell-Friday-Rotation-Board/admin.html`
+
+Admin data access is restricted by Firestore rules to:
+
+- `jacob.evans@explore.academy`
+- `jacobicusjax@gmail.com`
+
+The admin page shows all requests, groups them by Friday, counts remaining available staff, flags coverage conflicts, and can remove a request.
+
+## Active staff
+
+- Lingam
+- Evans
+- Latoya
+- Meda
+- Abby
+
+Dorr and McKinley are not part of future Friday scheduling.
