@@ -1,4 +1,4 @@
-// Anonymous staff request flow v5
+// Anonymous staff request flow v6
 rules_version = '2';
 
 service cloud.firestore {
