@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Friday Requests Admin</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#14213d;background:#eef1f5}*{box-sizing:border-box}body{margin:0}header{background:#1b3a6b;color:#fff;padding:24px;border-bottom:3px solid #b07a12}main{width:min(1100px,calc(100% - 28px));margin:24px auto}.card{background:#fff;border:1px solid #d5dbe5;border-radius:10px;padding:18px;box-shadow:0 8px 24px -16px rgba(20,33,61,.28);margin-bottom:16px}button{font:inherit;font-weight:700;border:1px solid #1b3a6b;background:#1b3a6b;color:#fff;border-radius:7px;padding:9px 13px;cursor:pointer}button.ghost{background:#fff;color:#1b3a6b}.muted{color:#66748d}.ok{color:#17603f}.bad{color:#9a2f2f}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #e6eaf1}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:#65728a}.pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:.8rem;font-weight:700;background:#edf1f7}.conflict{background:#fff1ef;border-left:5px solid #b5463b}.warn{background:#fff8e6;border-left:5px solid #b07a12}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.stat{padding:12px;background:#f5f7fa;border-radius:8px}.stat b{display:block;font-size:1.5rem}@media(max-width:700px){table{font-size:.88rem}th:nth-child(4),td:nth-child(4){display:none}}
+</style>
+</head>
+<body>
+<header><h1>Friday Requests Admin</h1><p>Central day-off requests and coverage conflicts</p></header>
+<main>
+  <section class="card" id="authCard">
+    <h2>Admin access</h2>
+    <p id="who" class="muted">Not signed in.</p>
+    <button id="signIn">Sign in with Google</button>
+    <button id="refresh" class="ghost" hidden>Refresh requests</button>
+  </section>
+  <section class="card" id="summaryCard" hidden>
+    <div class="summary">
+      <div class="stat"><span>Total requests</span><b id="total">0</b></div>
+      <div class="stat"><span>Fridays affected</span><b id="dates">0</b></div>
+      <div class="stat"><span>Coverage conflicts</span><b id="conflicts">0</b></div>
+    </div>
+  </section>
+  <section id="conflictList"></section>
+  <section class="card" id="tableCard" hidden>
+    <h2>All requests</h2>
+    <div style="overflow:auto">
+      <table>
+        <thead><tr><th>Friday</th><th>Staff</th><th>Can swap?</th><th>Submitted by</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-functions-compat.js"></script>
+<script>
+const config={apiKey:'AIzaSyC918WJoGQgxRKsqcz-3bXI7iZWv_1bwYE',authDomain:'dragonswood-9289e.firebaseapp.com',projectId:'dragonswood-9289e',storageBucket:'dragonswood-9289e.firebasestorage.app',messagingSenderId:'1064477064695',appId:'1:1064477064695:web:283e1016ee2303d39042f2',measurementId:'G-LPRLDGVBD2'};
+if(!firebase.apps.length)firebase.initializeApp(config);
+const auth=firebase.auth();
+const fn=firebase.app().functions('us-central1');
+const STAFF=['Lingam','Evans','Latoya','Meda','Abby'];
+const REQUIRED_COVERAGE=2;
+const $=id=>document.getElementById(id);
+const fmt=iso=>{const [y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});};
+const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function load(){
+  $('who').textContent='Loading requests…';
+  try{
+    const res=await fn.httpsCallable('listFridayOffRequests')({});
+    const requests=res.data.requests||[];
+    $('who').textContent='Admin access verified.';
+    $('who').className='ok';
+    $('refresh').hidden=false;
+    $('summaryCard').hidden=false;
+    $('tableCard').hidden=false;
+    $('total').textContent=requests.length;
+    const grouped={};
+    requests.forEach(r=>(grouped[r.fridayDate]??=[]).push(r));
+    $('dates').textContent=Object.keys(grouped).length;
+    let conflicts=0;
+    $('conflictList').innerHTML=Object.keys(grouped).sort().map(date=>{
+      const off=grouped[date];
+      const available=STAFF.length-off.length;
+      const bad=available<REQUIRED_COVERAGE;
+      if(bad)conflicts++;
+      return `<div class="card ${bad?'conflict':off.length>=2?'warn':''}"><b>${esc(fmt(date))}</b> · ${off.length} off · ${available} available${bad?' · COVERAGE CONFLICT':''}<br><span class="muted">${off.map(x=>esc(x.staffName)).join(', ')}</span></div>`;
+    }).join('');
+    $('conflicts').textContent=conflicts;
+    $('rows').innerHTML=requests.map(r=>`<tr><td>${esc(fmt(r.fridayDate))}</td><td><b>${esc(r.staffName)}</b></td><td><span class="pill">${r.canSwap?'Yes':'No'}</span></td><td>${esc(r.submittedByEmail||'')}</td><td><button class="ghost" data-delete="${esc(r.id)}">Remove</button></td></tr>`).join('');
+  }catch(e){
+    $('who').textContent=e.message||'Could not load requests.';
+    $('who').className='bad';
+  }
+}
+$('signIn').onclick=()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>{$('who').textContent=e.message;$('who').className='bad';});
+$('refresh').onclick=load;
+$('rows').onclick=async e=>{const b=e.target.closest('[data-delete]');if(!b)return;if(!confirm('Remove this day-off request?'))return;b.disabled=true;try{await fn.httpsCallable('deleteFridayOffRequest')({id:b.dataset.delete});await load();}catch(err){alert(err.message);b.disabled=false;}};
+auth.onAuthStateChanged(u=>{if(!u){$('who').textContent='Not signed in.';$('who').className='muted';return;}$('signIn').hidden=true;load();});
+</script>
+</body>
+</html>
