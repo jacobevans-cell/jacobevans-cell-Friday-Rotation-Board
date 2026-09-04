@@ -451,10 +451,6 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
             <label for="reqFriday">Friday requested off</label>
             <select id="reqFriday" required></select>
           </div>
-          <div class="req-field full">
-            <label>Flexibility</label>
-            <label class="req-check"><input type="checkbox" id="reqSwap" checked> I can work a different Friday instead if needed</label>
-          </div>
         </div>
         <p class="req-status" id="reqStatus">Submitting this request means you will not be scheduled on that Friday.</p>
         <div class="req-actions">
@@ -825,7 +821,7 @@ body.request-only .request-intro{border-left:5px solid var(--brass)}
     var staff = $("reqStaff").value;
     var iso = $("reqFriday").value;
     var f = D.fridays.filter(function (x) { return x.date === iso; })[0];
-    return { staff: staff, friday: f, swap: $("reqSwap").checked };
+    return { staff: staff, friday: f, swap: true };
   };
   var updateRequestStatus = function () {
     var el = $("reqStatus");

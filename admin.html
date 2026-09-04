@@ -29,7 +29,7 @@
     <h2>All requests</h2>
     <div style="overflow:auto">
       <table>
-        <thead><tr><th>Friday</th><th>Staff</th><th>Can swap?</th><th>Submitted by</th><th></th></tr></thead>
+        <thead><tr><th>Friday</th><th>Staff</th><th>Submitted by</th><th></th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -78,7 +78,7 @@ async function load(){
       return `<div class="card ${bad?'conflict':off.length>=2?'warn':''}"><b>${esc(fmt(date))}</b> · ${off.length} off · ${available} available${bad?' · COVERAGE CONFLICT':''}<br><span class="muted">${off.map(x=>esc(x.staffName)).join(', ')}</span></div>`;
     }).join('');
     $('conflicts').textContent=conflicts;
-    $('rows').innerHTML=requests.map(r=>`<tr><td>${esc(fmt(r.fridayDate))}</td><td><b>${esc(r.staffName)}</b></td><td><span class="pill">${r.canSwap?'Yes':'No'}</span></td><td>${esc(r.submittedByEmail||'')}</td><td><button class="ghost" data-delete="${esc(r.id)}">Remove</button></td></tr>`).join('');
+    $('rows').innerHTML=requests.map(r=>`<tr><td>${esc(fmt(r.fridayDate))}</td><td><b>${esc(r.staffName)}</b></td><td>${esc(r.submittedByEmail||'')}</td><td><button class="ghost" data-delete="${esc(r.id)}">Remove</button></td></tr>`).join('');
   }catch(e){
     $('who').textContent=e.message||'Could not load requests.';
     $('who').className='bad';
