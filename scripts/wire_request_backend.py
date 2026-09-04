@@ -1,46 +1,34 @@
 from pathlib import Path
 
-# Triggered after the workflow is present so the frontend patch runs.
-p=Path('index.html')
-s=p.read_text(encoding='utf-8')
+p = Path('index.html')
+s = p.read_text(encoding='utf-8')
 
-# Keep the copy aligned with the actual rule: submitted = approved/unavailable.
-s=s.replace('The final Friday schedule will be published after requests are reviewed.',
-            'Every submitted request is treated as an approved day off and will be used when the new rotation is generated.')
-s=s.replace('This is an availability request only. No Friday assignments are currently published.',
-            'Submitting this request means you will not be scheduled on that Friday.')
+# Switch the public page from callable Functions to direct Firestore on the
+# standalone Friday Rotation Board Firebase project.
+s = s.replace(
+    'https://www.gstatic.com/firebasejs/12.1.0/firebase-functions-compat.js',
+    'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore-compat.js'
+)
 
-# Add visible success/error/disabled states.
-css='''\n/* central request submission states */\n.req-status.req-ok{background:var(--s-work-bg);border-left-color:var(--s-work-fg);color:var(--s-work-fg)}\n.req-status.req-error{background:#FCE9E7;border-left-color:#A63D35;color:#7D2924}\n:root[data-theme="dark"] .req-status.req-error{background:#351B1A;color:#FFB7AF}\n.btn:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.25)}\n'''
-if 'central request submission states' not in s:
-    s=s.replace('</style>',css+'\n</style>',1)
+start_marker = '  /* ---------- Friday-off requests ---------- */'
+end_marker = '  /* ---------- filtering ---------- */'
+start = s.index(start_marker)
+end = s.index(end_marker, start)
 
-# Load Firebase client libraries before the application code.
-marker='<script type="application/json" id="data">'
-libs='''<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-app-compat.js"></script>\n<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-auth-compat.js"></script>\n<script src="https://www.gstatic.com/firebasejs/12.1.0/firebase-functions-compat.js"></script>\n\n'''
-if 'firebase-functions-compat.js' not in s:
-    s=s.replace(marker,libs+marker,1)
-
-s=s.replace('<button class="btn" type="submit" id="submitRequest" disabled>Submit request</button>',
-            '<button class="btn" type="submit" id="submitRequest">Submit request</button>',1)
-s=s.replace('Central request storage is being connected. The submit button will enable once requests can be saved safely.',
-            'Requests save directly to the Friday scheduling system. Google sign-in identifies the submission.',1)
-
-start=s.index('  /* ---------- Friday-off requests ---------- */')
-end=s.index('  /* ---------- filtering ---------- */',start)
-new_block=r'''  /* ---------- Friday-off requests ---------- */
+new_block = r'''  /* ---------- Friday-off requests ---------- */
   var requestFirebaseConfig = {
-    apiKey: "AIzaSyC918WJoGQgxRKsqcz-3bXI7iZWv_1bwYE",
-    authDomain: "dragonswood-9289e.firebaseapp.com",
-    projectId: "dragonswood-9289e",
-    storageBucket: "dragonswood-9289e.firebasestorage.app",
-    messagingSenderId: "1064477064695",
-    appId: "1:1064477064695:web:283e1016ee2303d39042f2",
-    measurementId: "G-LPRLDGVBD2"
+    apiKey: "AIzaSyDYzp_yHSiOGp26FOyXC-8-9U5MBz-QC-0",
+    authDomain: "friday-rotation-board.firebaseapp.com",
+    projectId: "friday-rotation-board",
+    storageBucket: "friday-rotation-board.firebasestorage.app",
+    messagingSenderId: "558058912278",
+    appId: "1:558058912278:web:921853261b4002ba52d337"
   };
   if (!firebase.apps.length) firebase.initializeApp(requestFirebaseConfig);
   var requestAuth = firebase.auth();
-  var requestFunctions = firebase.app().functions("us-central1");
+  var requestDb = firebase.firestore();
+  var requestProvider = new firebase.auth.GoogleAuthProvider();
+  var requestAdmins = ["jacob.evans@explore.academy", "jacobicusjax@gmail.com"];
 
   var requestRows = function () {
     return SCHOOL.filter(function (f) { return daysFrom(f.d) > 0; });
@@ -51,52 +39,54 @@ new_block=r'''  /* ---------- Friday-off requests ---------- */
     var f = D.fridays.filter(function (x) { return x.date === iso; })[0];
     return { staff: staff, friday: f, swap: $("reqSwap").checked };
   };
-  var setRequestMessage = function (text, kind) {
-    var box = $("reqStatus");
-    box.textContent = text;
-    box.classList.remove("req-ok", "req-error");
-    if (kind === "ok") box.classList.add("req-ok");
-    if (kind === "error") box.classList.add("req-error");
-  };
   var updateRequestStatus = function () {
-    setRequestMessage("Submitting this request means you will not be scheduled on that Friday.", "");
+    var el = $("reqStatus");
+    el.classList.remove("req-ok", "req-error");
+    el.textContent = "Submitting this request means you will not be scheduled on that Friday.";
   };
   var ensureRequestUser = async function () {
     var user = requestAuth.currentUser;
     if (!user) {
-      var provider = new firebase.auth.GoogleAuthProvider();
-      provider.setCustomParameters({ hd: "explore.academy", prompt: "select_account" });
-      var result = await requestAuth.signInWithPopup(provider);
+      var result = await requestAuth.signInWithPopup(requestProvider);
       user = result.user;
     }
-    var email = String(user.email || "").toLowerCase();
-    if (!email.endsWith("@explore.academy") && email !== "jacobicusjax@gmail.com") {
+    var email = String(user && user.email || "").toLowerCase();
+    var allowed = /@explore[.]academy$/.test(email) || requestAdmins.indexOf(email) > -1;
+    if (!allowed) {
       await requestAuth.signOut();
       throw new Error("Use your Explore Academy Google account.");
     }
     return user;
   };
-  var submitRequest = async function () {
+  var submitFridayRequest = async function () {
     var r = requestRecord();
     if (!r.friday || !r.staff) return;
     var btn = $("submitRequest");
+    var status = $("reqStatus");
     btn.disabled = true;
-    btn.textContent = "Saving…";
-    setRequestMessage("Signing in and saving your request…", "");
+    status.classList.remove("req-ok", "req-error");
+    status.textContent = "Saving request…";
     try {
-      await ensureRequestUser();
-      var call = requestFunctions.httpsCallable("submitFridayOffRequest");
-      await call({ staffName: r.staff, fridayDate: r.friday.date, canSwap: r.swap });
-      var msg = "Request saved ✓ " + r.staff + " is marked unavailable for Friday, " + fmtLong(r.friday.d) + ".";
-      setRequestMessage(msg, "ok");
-      toast("Friday-off request saved.");
-      btn.textContent = "Saved ✓";
-      setTimeout(function () { btn.textContent = "Submit request"; btn.disabled = false; }, 1800);
-    } catch (err) {
-      var message = String(err && err.message || "Could not save the request.");
-      if (/not-found/i.test(message)) message = "The request service is not deployed yet. No request was saved.";
-      setRequestMessage(message, "error");
-      btn.textContent = "Try again";
+      var user = await ensureRequestUser();
+      var staffKey = String(r.staff).toLowerCase();
+      var docId = staffKey + "__" + r.friday.date;
+      await requestDb.collection("fridayOffRequests").doc(docId).set({
+        staffName: r.staff,
+        staffKey: staffKey,
+        fridayDate: r.friday.date,
+        canSwap: r.swap,
+        submittedByEmail: String(user.email || "").toLowerCase(),
+        submittedByUid: user.uid,
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: false });
+      status.classList.add("req-ok");
+      status.textContent = "Request saved ✓ " + r.staff + " is marked unavailable for Friday, " + fmtLong(r.friday.d) + ".";
+    } catch (e) {
+      status.classList.add("req-error");
+      var msg = e && e.message ? e.message : "Could not save the request.";
+      if (/permission/i.test(msg)) msg = "This request could not be saved. Make sure you are signed in with your Explore Academy account and that Friday request access is enabled.";
+      status.textContent = msg;
+    } finally {
       btn.disabled = false;
     }
   };
@@ -109,7 +99,7 @@ new_block=r'''  /* ---------- Friday-off requests ---------- */
     if (state.me && D.staff.indexOf(state.me) > -1) $("reqStaff").value = state.me;
     $("reqStaff").addEventListener("change", updateRequestStatus);
     $("reqFriday").addEventListener("change", updateRequestStatus);
-    $("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); submitRequest(); });
+    $("requestForm").addEventListener("submit", function (ev) { ev.preventDefault(); submitFridayRequest(); });
     updateRequestStatus();
   };
   var syncRequestStaff = function () {
@@ -119,19 +109,23 @@ new_block=r'''  /* ---------- Friday-off requests ---------- */
   };
 
 '''
-s=s[:start]+new_block+s[end:]
 
-required=[
-  'httpsCallable("submitFridayOffRequest")',
-  'Request saved ✓',
-  'id="submitRequest">Submit request</button>',
-  'firebase-functions-compat.js',
-  'req-status.req-ok',
-  'Every submitted request is treated as an approved day off'
+s = s[:start] + new_block + s[end:]
+
+required = [
+    'projectId: "friday-rotation-board"',
+    'firebase.firestore()',
+    'collection("fridayOffRequests")',
+    'Request saved ✓',
+    'firebase-firestore-compat.js'
 ]
 for item in required:
     if item not in s:
-        raise SystemExit('missing '+item)
+        raise SystemExit(f'missing expected standalone Firebase marker: {item}')
+if 'dragonswood-9289e' in s:
+    raise SystemExit('old Dragonswood Firebase project still present in index.html')
+if 'firebase-functions-compat.js' in s:
+    raise SystemExit('old Firebase Functions client still present')
 
-p.write_text(s,encoding='utf-8')
-print('Friday request frontend wired to Firebase Functions.')
+p.write_text(s, encoding='utf-8')
+print('Public request page moved to standalone Firestore.')
