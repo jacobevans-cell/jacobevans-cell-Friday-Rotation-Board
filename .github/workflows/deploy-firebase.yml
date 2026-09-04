@@ -24,24 +24,50 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Require Firebase service account secret
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD }}
+          token_format: access_token
+
+      - name: Deploy Firestore rules directly
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD }}
+          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PROJECT_ID: friday-rotation-board
+        shell: bash
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "Missing repository secret FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD"
+          set -euo pipefail
+
+          RULES_JSON=$(jq -Rs '{source:{files:[{name:"firestore.rules",content:.}]}}' firestore.rules)
+          RULESET_RESPONSE=$(curl -fsS -X POST \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$RULES_JSON" \
+            "https://firebaserules.googleapis.com/v1/projects/$PROJECT_ID/rulesets")
+
+          RULESET_NAME=$(printf '%s' "$RULESET_RESPONSE" | jq -r '.name')
+          if [ -z "$RULESET_NAME" ] || [ "$RULESET_NAME" = "null" ]; then
+            echo "Could not create Firestore ruleset"
+            printf '%s\n' "$RULESET_RESPONSE"
             exit 1
           fi
 
-      - name: Prepare Google credentials
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FRIDAY_ROTATION_BOARD }}
-        run: |
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+          RELEASE_BODY=$(jq -n --arg ruleset "$RULESET_NAME" '{rulesetName:$ruleset}')
 
-      - name: Install Firebase CLI
-        run: npm install --global firebase-tools
+          if curl -fsS -X PATCH \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$RELEASE_BODY" \
+            "https://firebaserules.googleapis.com/v1/projects/$PROJECT_ID/releases/cloud.firestore?updateMask=rulesetName"; then
+            echo "Updated existing cloud.firestore release."
+          else
+            curl -fsS -X POST \
+              -H "Authorization: Bearer $ACCESS_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "$RELEASE_BODY" \
+              "https://firebaserules.googleapis.com/v1/projects/$PROJECT_ID/releases?releaseId=cloud.firestore"
+            echo "Created cloud.firestore release."
+          fi
 
-      - name: Deploy Firestore rules
-        run: firebase deploy --only firestore:rules --project friday-rotation-board --non-interactive
+          echo "Firestore rules deployed to $PROJECT_ID"
