@@ -3,6 +3,7 @@ import json,re
 from collections import Counter
 from datetime import datetime
 
+# Trigger after workflow creation.
 p=Path('index.html')
 s=p.read_text(encoding='utf-8')
 m=re.search(r'(<script type="application/json" id="data">\s*)(\{.*?\})(\s*</script>)',s,re.S)
@@ -14,8 +15,6 @@ ROTATORS=['Lingam','Evans','Manier','Abby']
 manier_off={'2026-09-04','2026-10-02','2026-11-06','2027-01-15','2027-02-12','2027-04-30'}
 lingam_off={'2027-01-15'}
 
-# Correct only the regular-Friday pairs needed to honor Manier's six hard days off,
-# then compensate on two nearby dates so future regular rotation remains 13/13/12/12.
 pair_overrides={
  '2026-10-02':('Abby','Evans'),
  '2026-10-16':('Manier','Lingam'),
@@ -33,8 +32,6 @@ for f in data['fridays']:
     for name in [f.get('morning1'),f.get('morning2')]:
         if name in STAFF:
             st[name]='Full Day 7:30–1:30'
-    # Meda is standing Friday support unless unavailable. The previously mistaken Meda
-    # day-off records are being removed, so these six dates should show Meda working.
     st['Meda']='Full Day 7:30–1:30'
     if d in manier_off:
         st['Manier']='OFF'
@@ -46,7 +43,6 @@ for f in data['fridays']:
     f['training']='—'
     f['note']='Two rotating teachers provide Friday coverage. Meda is standing campus support when available. Student day ends at 1:00; assigned staff remain through 1:30.'
 
-# Validate all hard days off are honored.
 for f in data['fridays']:
     d=f['date']; st=f.get('status',{})
     if d in manier_off and f['type']=='REGULAR FRIDAY':
@@ -57,7 +53,6 @@ for f in data['fridays']:
         rot_work=[n for n in ROTATORS if st.get(n)=='Full Day 7:30–1:30']
         assert len(rot_work)==2,(d,rot_work)
 
-# Rebuild summary from actual statuses.
 working={'Full Day 7:30–1:30','Morning Coverage + Training','Training 11:30–1:30','Full-Day Coverage — Misses Training','On Campus (Completed)'}
 summary=[]
 for name in STAFF:
