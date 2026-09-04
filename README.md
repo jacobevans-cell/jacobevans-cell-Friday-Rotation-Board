@@ -1,6 +1,6 @@
 # Friday Rotation Board
 
-> **Public mode right now:** request days off only. The rotation/schedule is intentionally hidden until availability requests are reviewed.
+> **Public mode right now:** request days off only. The rotation/schedule is intentionally hidden until availability is collected and a real schedule is generated.
 
 Standalone 2026–2027 Friday campus and staff rotation system for Explore Academy.
 
@@ -14,16 +14,28 @@ Standalone 2026–2027 Friday campus and staff rotation system for Explore Acade
 
 Dorr and McKinley are no longer assigned future Friday duty. Their August assignments remain in the board only as historical records.
 
+## Current backend
+
+The Friday system uses its own Firebase project:
+
+`friday-rotation-board`
+
+- Firebase Authentication for Google sign-in
+- Cloud Firestore collection `fridayOffRequests`
+- No Cloud Functions required
+- No dependency on Dragonswood Firebase
+
 ## What the board includes
 
-- Balanced Friday-duty rotation
-- Regular and training-Friday coverage
-- Per-staff views and workload totals
-- Coverage grid and monthly workload heatmap
-- Calendar (.ics) export
-- Friday availability / day-off request workflow
-- Full Friday-day schedule and duty information
+- Friday day-off request form
+- Automatic approval: submitted request = unavailable that Friday
+- Central request storage
+- Admin request dashboard and conflict warnings
+- Hidden draft rotation data for future regeneration
+- Coverage grid / workload / calendar tooling to be republished after the real schedule is generated
 
-The rotation is being rebuilt for five active staff after availability is collected. Abby is now part of the regular Friday scheduling pool.
+Public page: `index.html`
 
-`index.html` is the complete application. `HANDOFF.md` contains the project and implementation details.
+Admin page: `admin.html`
+
+`HANDOFF.md` contains the current implementation and scheduling rules.
