@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Trigger patch after workflow exists.
 # Public form
 p = Path('index.html')
 s = p.read_text(encoding='utf-8')
