@@ -4,15 +4,31 @@
 
 Standalone 2026–2027 Friday campus and staff rotation system for Explore Academy.
 
-## Current active Friday staff
+## Locked Friday staffing model
+
+Active Friday pool:
 
 - Lingam
 - Evans
-- Latoya
 - Meda
 - Abby
+- Manier
 
-Dorr and McKinley are no longer assigned future Friday duty. Their August assignments remain in the board only as historical records.
+Meda is treated as a standing Friday presence / campus support person. Regular rotating coverage is built primarily around Abby, Manier, Evans, and Lingam, while still honoring any day-off request Meda submits.
+
+Latoya is no longer in the active future Friday rotation pool. Dorr and McKinley are also not assigned future Friday duty. Historical August records may remain in the hidden draft data.
+
+Fixed Teacher Clarity training Fridays from the September 4 staffing chat:
+
+- September 18, 2026
+- October 23, 2026
+- November 13, 2026
+- January 29, 2027
+- February 26, 2027
+- March 26, 2027
+- April 23, 2027
+
+Training Fridays are handled as a separate staffing problem from regular Fridays. Final assignments remain unpublished until day-off requests are collected.
 
 ## Current backend
 
@@ -20,8 +36,9 @@ The Friday system uses its own Firebase project:
 
 `friday-rotation-board`
 
-- Firebase Authentication for Google sign-in
+- Public staff requests require no sign-in
 - Cloud Firestore collection `fridayOffRequests`
+- Admin page remains protected with Google sign-in
 - No Cloud Functions required
 - No dependency on Dragonswood Firebase
 
