@@ -1,0 +1,73 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function email() {
+      return signedIn() && request.auth.token.email != null
+        ? request.auth.token.email
+        : '';
+    }
+
+    function isAdmin() {
+      return signedIn() && (
+        email() == 'jacob.evans@explore.academy' ||
+        email() == 'jacobicusjax@gmail.com'
+      );
+    }
+
+    function isExploreStaff() {
+      return signedIn()
+        && request.auth.token.email != null
+        && request.auth.token.email.matches('.*@explore[.]academy$');
+    }
+
+    function validStaffPair(data) {
+      return (data.staffName == 'Lingam' && data.staffKey == 'lingam')
+        || (data.staffName == 'Evans' && data.staffKey == 'evans')
+        || (data.staffName == 'Latoya' && data.staffKey == 'latoya')
+        || (data.staffName == 'Meda' && data.staffKey == 'meda')
+        || (data.staffName == 'Abby' && data.staffKey == 'abby');
+    }
+
+    function validRequest(requestId, data) {
+      return data.keys().hasOnly([
+          'staffName', 'staffKey', 'fridayDate', 'canSwap',
+          'submittedByEmail', 'submittedByUid', 'createdAt', 'updatedAt'
+        ])
+        && data.staffName is string
+        && data.staffKey is string
+        && data.fridayDate is string
+        && data.fridayDate.matches('20(26|27)-[0-9]{2}-[0-9]{2}')
+        && data.canSwap is bool
+        && data.submittedByEmail == email()
+        && data.submittedByUid == request.auth.uid
+        && data.updatedAt == request.time
+        && validStaffPair(data)
+        && requestId == data.staffKey + '__' + data.fridayDate;
+    }
+
+    match /fridayOffRequests/{requestId} {
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.submittedByUid == request.auth.uid);
+
+      allow create: if (isExploreStaff() || isAdmin())
+                    && validRequest(requestId, request.resource.data)
+                    && request.resource.data.createdAt == request.time;
+
+      allow update: if (isExploreStaff() || isAdmin())
+                    && resource.data.submittedByUid == request.auth.uid
+                    && validRequest(requestId, request.resource.data)
+                    && request.resource.data.createdAt == resource.data.createdAt;
+
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
